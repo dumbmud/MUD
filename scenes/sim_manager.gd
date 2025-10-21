@@ -3,7 +3,7 @@ extends Node2D
 enum GameMode { TURN_BASED, REAL_TIME }
 @export var mode: GameMode = GameMode.TURN_BASED
 
-const CELL_PX := 24
+const CELL_PX := 64
 const GRID_W := 481
 const GRID_H := 271
 
@@ -37,12 +37,15 @@ var action_end_tick := 0
 @onready var ui: UIOverlay = $UI/HUD
 
 func _ready() -> void:
+	position = Vector2.ZERO
 	cam.position = Vector2.ZERO
+	cam.anchor_mode = Camera2D.ANCHOR_MODE_DRAG_CENTER
+	cam.make_current()
 	get_viewport().size_changed.connect(_on_view_changed)
 	_apply_zoom()
 	console.configure(CELL_PX, visible_w, visible_h, GRID_W, GRID_H)
 	console.redraw(player_pos, Callable(self, "get_world_glyph"))
-	ui.set_debug(tick_count, player_pos, next_free_tick, zoom_levels[zoom_index], visible_w, visible_h)
+
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("move_up"):           _queue_dir(Vector2i(0, -1))
@@ -91,17 +94,24 @@ func _on_view_changed() -> void:
 	console.configure(CELL_PX, visible_w, visible_h, GRID_W, GRID_H)
 
 func _update_visible() -> void:
-	var vp_px := get_viewport_rect().size
-	var z := cam.zoom.x
-	visible_w = int(ceil(vp_px.x / (CELL_PX * z))) + 2
-	visible_h = int(ceil(vp_px.y / (CELL_PX * z))) + 2
-	if (visible_w & 1) == 0: visible_w += 1
+	var vp := get_viewport_rect().size
+	var z := cam.zoom
+	# world span visible = screen_pixels / zoom
+	var world_w_px := vp.x / z.x
+	var world_h_px := vp.y / z.y
+
+	visible_w = int(ceil(world_w_px / CELL_PX))
+	visible_h = int(ceil(world_h_px / CELL_PX))
+	if (visible_w & 1) == 0: visible_w += 1  # force odd
 	if (visible_h & 1) == 0: visible_h += 1
+
 
 func _apply_zoom() -> void:
 	var z: float = zoom_levels[zoom_index]
 	cam.zoom = Vector2(z, z)
 	_update_visible()
+	console.configure(CELL_PX, visible_w, visible_h, GRID_W, GRID_H)  # update console on zoom
+
 
 func _process(dt: float) -> void:
 	if mode == GameMode.REAL_TIME or (mode == GameMode.TURN_BASED and ticks_running):
