@@ -28,3 +28,4 @@ func set_debug(
 		% [pos.x, pos.y, energy_TU, speed_TU_per_tick, steps_this_tick]
 	lbl_db1.text = "ReadyTick: %d   Busy: %s   Zoom: %.2f   View: %dx%d cells" \
 		% [ready_tick, str(is_busy), zoom, cols, rows]
+	

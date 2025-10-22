@@ -6,6 +6,16 @@ var grid_pos: Vector2i
 var plan: BodyPlan        # optional now, useful later
 var plan_map: Dictionary = {}
 
+# in Actor.gd
+var zone_labels: Dictionary = {}     # id->string
+var zone_coverage: Dictionary = {}   # id->int (sum 100)
+var zone_volume: Dictionary = {}     # id->int (sum 100)
+var zone_organs: Dictionary = {}     # id->[StringName]
+var zone_has_artery: Dictionary = {} # id->bool
+var zone_eff_kind: Dictionary = {}   # id->"grasper"/"stepper"/"chewer"
+var zone_eff_score: Dictionary = {}  # id->0..1
+var zone_sensors: Dictionary = {}    # id->{vision:0..1}
+var zone_effectors: Dictionary = {}  # id->{&"grasper":f,&"stepper":f,&"chewer":f}
 
 # Display (set by SpeciesDB)
 var glyph: String = ""
