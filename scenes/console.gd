@@ -35,7 +35,7 @@ func _compute_metrics() -> void:
 	var h := font.get_height(font_size)
 	var asc := font.get_ascent(font_size)
 	var vpad: float = (cell_px - h) * 0.5
-	_baseline = int(round(vpad + asc))
+	_baseline = roundi(vpad + asc)
 
 func redraw(player_world: Vector2i, get_world_callable: Callable) -> void:
 	_player = player_world
