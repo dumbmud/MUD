@@ -4,29 +4,27 @@ extends Node2D
 @export var font: FontFile
 @export var font_size := 64
 
-var CELL := 24
-var VISIBLE_W := 0
-var VISIBLE_H := 0
-var GRID_W := 0
-var GRID_H := 0
+var cell_px := 64
+var view_cols := 0
+var view_rows := 0
+var grid_cols := 0
+var grid_rows := 0
 
-var _center := Vector2i.ZERO
+var _view_center := Vector2i.ZERO
 var _player := Vector2i.ZERO
-var _get_world: Callable
+var _get_cell: Callable
 
 var _baseline := 0.0
-var _hpad := 0.0
-var _screen_origin_px := Vector2i.ZERO
+var _view_origin_px := Vector2i.ZERO
 
-func configure(cell_px:int, vw:int, vh:int, gw:int, gh:int) -> void:
-	CELL = cell_px
-	VISIBLE_W = vw
-	VISIBLE_H = vh
-	GRID_W = gw
-	GRID_H = gh
-	_center = Vector2i(int(VISIBLE_W * 0.5), int(VISIBLE_H * 0.5))
-	# put top-left of visible window at exactly -half size (½-cell shift included)
-	_screen_origin_px = -Vector2i(int(VISIBLE_W * CELL * 0.5), int(VISIBLE_H * CELL * 0.5))
+func configure(px:int, vw:int, vh:int, gw:int, gh:int) -> void:
+	cell_px = px
+	view_cols = vw
+	view_rows = vh
+	grid_cols = gw
+	grid_rows = gh
+	_view_center = Vector2i(int(view_cols * 0.5), int(view_rows * 0.5))
+	_view_origin_px = -Vector2i(int(view_cols * cell_px * 0.5), int(view_rows * cell_px * 0.5))
 	_compute_metrics()
 	queue_redraw()
 
@@ -34,38 +32,57 @@ func _compute_metrics() -> void:
 	if font == null: return
 	font.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_DISABLED
 	font.oversampling = 1.0
-
 	var h := font.get_height(font_size)
 	var asc := font.get_ascent(font_size)
-	var vpad: float = (CELL - h) * 0.5      # allow negative
+	var vpad: float = (cell_px - h) * 0.5
 	_baseline = int(round(vpad + asc))
-	_hpad = 0                                # not used anymore
-
 
 func redraw(player_world: Vector2i, get_world_callable: Callable) -> void:
 	_player = player_world
-	_get_world = get_world_callable
+	_get_cell = get_world_callable
 	queue_redraw()
 
 func _draw() -> void:
-	var size_px := Vector2(GRID_W * CELL, GRID_H * CELL)
-	draw_rect(Rect2(-size_px * 0.5, size_px), Color.BLACK, true)
 	if font == null: return
-	draw_line(Vector2(-10000,0), Vector2(10000,0), Color.RED)
-	draw_line(Vector2(0,-10000), Vector2(0,10000), Color.RED)
-	for sy in range(VISIBLE_H):
-		var y_px := _screen_origin_px.y + sy * CELL
-		for sx in range(VISIBLE_W):
-			var x_px := _screen_origin_px.x + sx * CELL
-			var wx := _player.x + (sx - _center.x)
-			var wy := _player.y + (sy - _center.y)
-			var ch: String = _get_world.call(Vector2i(wx, wy))
-			if ch == "" or ch == " ": continue
-			# left edge of cell, baseline y; width=CELL centers the glyph visually
-			draw_string(font, Vector2(x_px, y_px + _baseline),
-				ch, HORIZONTAL_ALIGNMENT_CENTER, CELL, font_size)
 
-	# center cell
-	var mid_tl := -Vector2i(int(CELL * 0.5), int(CELL * 0.5))
-	draw_string(font, Vector2(mid_tl.x, mid_tl.y + _baseline),
-		"@", HORIZONTAL_ALIGNMENT_CENTER, CELL, font_size)
+	for sy in range(view_rows):
+		var y_px := _view_origin_px.y + sy * cell_px
+		for sx in range(view_cols):
+			var x_px := _view_origin_px.x + sx * cell_px
+			var wx := _player.x + (sx - _view_center.x)
+			var wy := _player.y + (sy - _view_center.y)
+
+			var cell: Variant = _get_cell.call(Vector2i(wx, wy))
+
+			var ch: String = ""
+			var fg: Color = Color.WHITE
+			var bg: Color = Color.BLACK
+
+			match typeof(cell):
+				TYPE_STRING:
+					ch = cell
+				TYPE_DICTIONARY:
+					ch = cell.get("ch", cell.get("glyph", ""))
+					fg = cell.get("fg", cell.get("color", Color.WHITE))
+					bg = cell.get("bg", Color.BLACK)
+				TYPE_ARRAY:
+					if cell.size() > 0: ch = cell[0]
+					if cell.size() > 1: fg = cell[1]
+					if cell.size() > 2: bg = cell[2]
+				_:
+					pass
+
+			# draw background per cell
+			draw_rect(Rect2(Vector2(x_px, y_px), Vector2(cell_px, cell_px)), bg, true)
+
+			# draw one foreground glyph if any
+			if ch != "" and ch != " ":
+				draw_string(
+					font,
+					Vector2(x_px, y_px + _baseline),
+					ch,
+					HORIZONTAL_ALIGNMENT_CENTER,
+					cell_px,
+					font_size,
+					fg
+				)

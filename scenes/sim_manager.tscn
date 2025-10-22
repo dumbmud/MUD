@@ -1,20 +1,20 @@
-[gd_scene load_steps=5 format=3 uid="uid://dwy4dlk8kjtnp"]
+[gd_scene load_steps=6 format=3 uid="uid://dwy4dlk8kjtnp"]
 
 [ext_resource type="Script" uid="uid://bjeq14b3iqg84" path="res://scenes/sim_manager.gd" id="1_ax8je"]
 [ext_resource type="Script" uid="uid://b5vvvhsvdliem" path="res://scenes/console.gd" id="2_h4prr"]
 [ext_resource type="FontFile" uid="uid://ibediugxxdy5" path="res://fonts/JetBrainsMono-Regular.ttf" id="3_h4prr"]
 [ext_resource type="Script" uid="uid://y468lwthrfm6" path="res://scenes/ui_overlay.gd" id="4_0spcm"]
+[ext_resource type="Script" uid="uid://be3mqpofo7gpm" path="res://scenes/debug_world.gd" id="5_jcbco"]
 
 [node name="SimManager" type="Node2D"]
 script = ExtResource("1_ax8je")
-mode = null
-SPEED_TU_PER_TICK = null
 
 [node name="Camera" type="Camera2D" parent="."]
 
 [node name="Console" type="Node2D" parent="."]
 script = ExtResource("2_h4prr")
 font = ExtResource("3_h4prr")
+font_size = null
 
 [node name="UI" type="CanvasLayer" parent="."]
 
@@ -44,3 +44,6 @@ layout_mode = 2
 
 [node name="debug3" type="Label" parent="UI/HUD/VBoxContainer"]
 layout_mode = 2
+
+[node name="DebugWorld" type="Node" parent="."]
+script = ExtResource("5_jcbco")
