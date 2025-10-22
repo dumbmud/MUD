@@ -3,6 +3,9 @@ extends RefCounted
 
 var actor_id: int
 var grid_pos: Vector2i
+var plan: BodyPlan        # optional now, useful later
+var plan_map: Dictionary = {}
+
 
 # Display (set by SpeciesDB)
 var glyph: String = ""

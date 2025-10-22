@@ -58,19 +58,17 @@ func _draw() -> void:
 			var fg: Color = Color.WHITE
 			var bg: Color = Color.BLACK
 
-			match typeof(cell):
-				TYPE_STRING:
-					ch = cell
-				TYPE_DICTIONARY:
-					ch = cell.get("ch", cell.get("glyph", ""))
-					fg = cell.get("fg", cell.get("color", Color.WHITE))
-					bg = cell.get("bg", Color.BLACK)
-				TYPE_ARRAY:
-					if cell.size() > 0: ch = cell[0]
-					if cell.size() > 1: fg = cell[1]
-					if cell.size() > 2: bg = cell[2]
-				_:
-					pass
+			if cell is String:
+				ch = cell
+			elif cell is Dictionary:
+				ch = cell.get("ch", cell.get("glyph", ""))
+				fg = cell.get("fg", cell.get("color", Color.WHITE))
+				bg = cell.get("bg", Color.BLACK)
+			elif cell is Array:
+				if cell.size() > 0: ch = cell[0]
+				if cell.size() > 1: fg = cell[1]
+				if cell.size() > 2: bg = cell[2]
+
 
 			# draw background per cell
 			draw_rect(Rect2(Vector2(x_px, y_px), Vector2(cell_px, cell_px)), bg, true)

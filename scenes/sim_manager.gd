@@ -31,6 +31,7 @@ var ticks_running := false
 var actors: Array[Actor] = []
 var next_actor_id := 1
 var tile_occupant: Dictionary = {}  # Dictionary<Vector2i,int>
+var npc_dir_by_id: Dictionary = {}  # id -> Vector2i
 
 # --- player intent (one-shot) ---
 var intent_dir := Vector2i.ZERO
@@ -44,18 +45,21 @@ func _ready() -> void:
 	console.configure(CELL_PX, visible_w, visible_h, GRID_W, GRID_H)
 
 	# spawn player at origin
-	var p: Actor = ActorFactory.spawn(0, Vector2i.ZERO, "human", true)
+	var p := ActorFactory.spawn(0, Vector2i.ZERO, &"human", true)
 	actors.append(p)
 	tile_occupant[p.grid_pos] = p.actor_id
 
 	# spawn two test NPCs
-	_add_npc("goblin", Vector2i(-15, -8), Vector2i(1, 0))  # race lane
-	_add_npc("goblin", Vector2i(-18, 0),  Vector2i(1, 0))  # plus hall
+	_add_npc(&"goblin", Vector2i(-15, -8), Vector2i(1, 0))  # race lane
+	_add_npc(&"goblin", Vector2i(-18, 0),  Vector2i(1, 0))  # plus hall
+	
+
+
 
 	_redraw()
 
 
-func _add_npc(species_id: String, start: Vector2i, dir: Vector2i) -> void:
+func _add_npc(species_id: StringName, start: Vector2i, dir: Vector2i) -> void:
 	var a: Actor = ActorFactory.spawn(next_actor_id, start, species_id, false)
 	next_actor_id += 1
 	a.pending_dir = Vector2i.ZERO
@@ -63,10 +67,6 @@ func _add_npc(species_id: String, start: Vector2i, dir: Vector2i) -> void:
 	a.ready_at_tick = 0
 	actors.append(a)
 	tile_occupant[a.grid_pos] = a.actor_id
-
-	if Engine.get_meta("npc_dir_by_id") == null:
-		Engine.set_meta("npc_dir_by_id", {})
-	var npc_dir_by_id: Dictionary = (Engine.get_meta("npc_dir_by_id") as Dictionary)
 	npc_dir_by_id[a.actor_id] = dir
 
 
@@ -124,11 +124,6 @@ func _tick() -> void:
 	# 2) SCHEDULE: consume intents and HOLD/AI; RT idle → Wait(1)
 	var player_steps_this_tick := 0
 
-	# ensure NPC dir map
-	if Engine.get_meta("npc_dir_by_id") == null:
-		Engine.set_meta("npc_dir_by_id", {})
-	var npc_dir_by_id: Dictionary = (Engine.get_meta("npc_dir_by_id") as Dictionary)
-
 	for a in actors:
 		if a.is_waiting or a.pending_dir != Vector2i.ZERO:
 			continue
@@ -158,7 +153,7 @@ func _tick() -> void:
 					player_steps_this_tick = 1
 				else:
 					var need := cost - a.energy_tu
-					var ticks_needed := int(ceil(float(need) / float(a.tu_per_tick)))
+					var ticks_needed := ceili(float(need) / float(a.tu_per_tick))
 					a.pending_dir = intent_dir
 					a.is_waiting = true
 					a.ready_at_tick = tick_count + max(1, ticks_needed)
