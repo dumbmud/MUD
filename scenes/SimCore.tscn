@@ -1,10 +1,11 @@
 [gd_scene load_steps=3 format=3 uid="uid://dwy4dlk8kjtnp"]
 
 [ext_resource type="Script" uid="uid://bjeq14b3iqg84" path="res://scenes/sim_manager.gd" id="1_hywww"]
-[ext_resource type="Script" uid="uid://be3mqpofo7gpm" path="res://scenes/debug_world.gd" id="2_nho5r"]
+[ext_resource type="Script" uid="uid://dv7nsa1o8hs48" path="res://core/world/world_test.gd" id="2_hywww"]
 
 [node name="SimCore" type="Node2D"]
 script = ExtResource("1_hywww")
+mode = null
 
-[node name="DebugWorld" type="Node" parent="."]
-script = ExtResource("2_nho5r")
+[node name="WorldTest" type="Node" parent="."]
+script = ExtResource("2_hywww")

@@ -2,12 +2,15 @@
 class_name Actor
 extends RefCounted
 
+# Identity / pos
 var actor_id: int
 var grid_pos: Vector2i
-var plan: BodyPlan        # optional now, useful later
+
+# Anatomy
+var plan: BodyPlan = null
 var plan_map: Dictionary = {}
 
-# Zoning (compiled onto the actor by SpeciesDB)
+# Zones (compiled by SpeciesDB)
 var zone_labels: Dictionary = {}     # id->string
 var zone_coverage: Dictionary = {}   # id->int (sum 100)
 var zone_volume: Dictionary = {}     # id->int (sum 100)
@@ -18,12 +21,12 @@ var zone_eff_score: Dictionary = {}  # id->0..1
 var zone_sensors: Dictionary = {}    # id->{vision:0..1}
 var zone_effectors: Dictionary = {}  # id->{&"grasper":f,&"stepper":f,&"chewer":f}
 
-# Display (set by SpeciesDB)
+# Display
 var glyph: String = ""
 var fg_color: Color = Color.WHITE
 var is_player: bool = false
 
-# Phase timing (formerly TU)
+# Time / speed
 var phase_per_tick: int = 20
 var phase: int = 0
 

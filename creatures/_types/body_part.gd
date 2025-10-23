@@ -16,7 +16,7 @@ class_name BodyPart
 @export var has_artery: bool = false
 @export var label_hint: String = ""
 
-# Effectors + sensors (multiple per zone will be merged at compile time)
+# Effectors + sensors
 @export var effector_kind: StringName = &""   # &"grasper"|&"stepper"|&"chewer"|&""
 @export var effector_score: float = 0.0       # 0..1
 @export var sensor_kind: StringName = &""     # &"vision"|&""
