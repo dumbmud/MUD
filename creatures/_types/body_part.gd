@@ -1,3 +1,4 @@
+# res://creatures/_types/body_part.gd
 extends Resource
 class_name BodyPart
 
@@ -15,7 +16,7 @@ class_name BodyPart
 @export var has_artery: bool = false
 @export var label_hint: String = ""
 
-# Effectors + sensors
+# Effectors + sensors (multiple per zone will be merged at compile time)
 @export var effector_kind: StringName = &""   # &"grasper"|&"stepper"|&"chewer"|&""
 @export var effector_score: float = 0.0       # 0..1
 @export var sensor_kind: StringName = &""     # &"vision"|&""

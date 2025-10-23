@@ -1,3 +1,4 @@
+# res://creatures/_types/actor.gd
 class_name Actor
 extends RefCounted
 
@@ -6,7 +7,7 @@ var grid_pos: Vector2i
 var plan: BodyPlan        # optional now, useful later
 var plan_map: Dictionary = {}
 
-# in Actor.gd
+# Zoning (compiled onto the actor by SpeciesDB)
 var zone_labels: Dictionary = {}     # id->string
 var zone_coverage: Dictionary = {}   # id->int (sum 100)
 var zone_volume: Dictionary = {}     # id->int (sum 100)
@@ -22,14 +23,9 @@ var glyph: String = ""
 var fg_color: Color = Color.WHITE
 var is_player: bool = false
 
-# Time / speed (speed set by SpeciesDB)
-var tu_per_tick: int = 20
-var energy_tu: int = 0
-
-# Action state
-var is_waiting: bool = false
-var ready_at_tick: int = 0
-var pending_dir: Vector2i = Vector2i.ZERO
+# Phase timing (formerly TU)
+var phase_per_tick: int = 20
+var phase: int = 0
 
 func _init(_actor_id: int, _grid_pos: Vector2i, _is_player: bool) -> void:
 	actor_id = _actor_id

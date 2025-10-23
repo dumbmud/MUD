@@ -79,6 +79,7 @@ script = ExtResource("1_d0ylc")
 name = &"left_hand"
 parent = &"left_lower_arm"
 coverage = 2
+slot = &"limb"
 limb_class = &"arm"
 group_id = &"arm.L"
 effector_kind = &"grasper"
@@ -104,7 +105,6 @@ parent = &"torso"
 coverage = 7
 volume = 8
 slot = &"limb"
-core_role = &"leg"
 limb_class = &"leg"
 group_id = &"leg.L"
 has_artery = true
@@ -164,6 +164,8 @@ coverage = 2
 slot = &"limb"
 limb_class = &"leg"
 group_id = &"leg.R"
+effector_kind = &"stepper"
+effector_score = 1.0
 metadata/_custom_type_script = "uid://c8r0hd8vrgoq6"
 
 [resource]

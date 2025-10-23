@@ -1,4 +1,6 @@
+# res://creatures/_types/species_db.gd
 extends Node
+# Autoloaded as "SpeciesDB"
 
 const SPECIES_DIR := "res://creatures/species"  # single source of truth
 
@@ -12,19 +14,25 @@ func _build_index(root: String) -> void:
 	by_id.clear()
 	by_tag.clear()
 	_scan_dir(root)
-	# optional sanity:
-	# print("Species loaded:", by_id.keys())
-	# sanity check
+
+	# sanity checks (skip species with no zones)
 	for sid in by_id.keys():
-		var s = by_id[sid]
-		var cov : Dictionary = s["zone_coverage_pct"]; var vol : Dictionary = s["zone_volume_pct"]
-		var cov_sum := 0; for v in cov.values(): cov_sum += int(v)
-		var vol_sum := 0; for v in vol.values(): vol_sum += int(v)
+		var s : Dictionary = by_id[sid]
+		if s.get("zones", {}).is_empty():
+			continue
+
+		var cov : Dictionary = s["zone_coverage_pct"]
+		var vol : Dictionary = s["zone_volume_pct"]
+		var cov_sum := 0
+		for v in cov.values(): cov_sum += int(v)
+		var vol_sum := 0
+		for v in vol.values(): vol_sum += int(v)
 		assert(cov_sum == 100, "Coverage must sum 100 for %s" % sid)
 		assert(vol_sum == 100, "Volume must sum 100 for %s" % sid)
 
 		# head/torso present
-		var has_head := false; var has_torso := false
+		var has_head := false
+		var has_torso := false
 		for zid in s["zones"].keys():
 			var z: Dictionary = s["zones"][zid]
 			if z["kind"] == &"core" and z["class"] == &"head": has_head = true
@@ -38,9 +46,6 @@ func _build_index(root: String) -> void:
 			for z in s["zone_sensors"].values():
 				v = max(v, float(z.get(&"vision", 0.0)))
 			assert(v > 0.0, "Human needs vision")
-
-
-
 
 func _scan_dir(path: String) -> void:
 	var d := DirAccess.open(path)
@@ -70,15 +75,20 @@ func _compile_species(s: Species) -> Dictionary:
 
 	var zones := _compile_zones(s.plan) if s.plan != null else {}
 
-	var zone_cov_raw := {}; var zone_vol_raw := {}
+	var zone_cov_raw := {}
+	var zone_vol_raw := {}
 	for id in zones.keys():
 		zone_cov_raw[id] = zones[id]["cov"]
 		zone_vol_raw[id] = zones[id]["vol"]
 	var zone_cov_pct := _normalize_weights(zone_cov_raw)
 	var zone_vol_pct := _normalize_weights(zone_vol_raw)
 
-	var zone_organs := {}; var zone_has_artery := {}; var zone_labels := {}
-	var zone_effectors := {}; var zone_eff_kind := {}; var zone_eff_score := {}
+	var zone_organs := {}
+	var zone_has_artery := {}
+	var zone_labels := {}
+	var zone_effectors := {}
+	var zone_eff_kind := {}
+	var zone_eff_score := {}
 	for id in zones.keys():
 		var z:Dictionary = zones[id]
 		zone_organs[id] = _organs_for(z["kind"], z["class"], id)
@@ -88,7 +98,8 @@ func _compile_species(s: Species) -> Dictionary:
 		# multi-effectors
 		zone_effectors[id] = z["effectors"]        # {kind->score}
 		# compatibility primary: prefer grasper, else max score
-		var pk := &""; var ps := -1.0
+		var pk := &""
+		var ps := -1.0
 		for k in (z["effectors"] as Dictionary).keys():
 			var sc := float(z["effectors"][k])
 			if k == &"grasper":
@@ -126,8 +137,7 @@ func _compile_species(s: Species) -> Dictionary:
 		"zone_sensors": zone_sensors,
 	}
 
-
-# ---- LOOKUP API ----
+# ---- LOOKUP API --------------------------------------------------------------
 func get_id(id: Variant) -> Dictionary:
 	var key: StringName
 	if id is StringName:
@@ -150,30 +160,46 @@ func _dedupe(arr: Array) -> Array:
 			out.append(v)
 	return out
 
-# ---- APPLY TO ACTOR ----
+# ---- APPLY TO ACTOR ----------------------------------------------------------
 func apply_to(species_id: Variant, actor: Actor) -> void:
 	var s := get_id(species_id)
-	if s.is_empty():
-		push_warning("Species not found: %s" % species_id)
+	var not_found := s.is_empty()
+
+	# Fallback to human if requested id missing
+	if not_found:
+		var human := get_id(&"human")
+		if human.is_empty():
+			# Absolute fallback: loud debug stub
+			actor.glyph = "?"
+			actor.fg_color = Color(1, 0, 1)
+			actor.phase_per_tick = 20
+			return
+		s = human
+
+	# Display
+	if not_found:
 		actor.glyph = "?"
 		actor.fg_color = Color(1, 0, 1)
-		actor.tu_per_tick = 20
-		return
-	actor.glyph = s["glyph"]
-	actor.fg_color = s["fg"]
-	actor.tu_per_tick = int(s["stats"].get("tu_per_tick", actor.tu_per_tick))
+	else:
+		actor.glyph = s["glyph"]
+		actor.fg_color = s["fg"]
+
+	# Phase timings (support old "tu_per_tick" for backward compatibility)
+	var stats: Dictionary = s["stats"]
+	actor.phase_per_tick = int(stats.get("phase_per_tick", stats.get("tu_per_tick", actor.phase_per_tick)))
+
+	# Anatomy and compiled zones
 	actor.plan = s["plan"]
 	actor.plan_map = s["plan_map"]
-	actor.zone_labels      = s["zone_labels"]
-	actor.zone_coverage    = s["zone_coverage_pct"]   # for hit weights
-	actor.zone_volume      = s["zone_volume_pct"]     # for scaling
-	actor.zone_organs      = s["zone_organs"]
-	actor.zone_has_artery  = s["zone_has_artery"]
-	actor.zone_eff_kind    = s["zone_eff_kind"]
-	actor.zone_eff_score   = s["zone_eff_score"]
-	actor.zone_sensors     = s["zone_sensors"]
-	actor.zone_effectors   = s["zone_effectors"]
-
+	actor.zone_labels      = s.get("zone_labels", {})
+	actor.zone_coverage    = s.get("zone_coverage_pct", {})
+	actor.zone_volume      = s.get("zone_volume_pct", {})
+	actor.zone_organs      = s.get("zone_organs", {})
+	actor.zone_has_artery  = s.get("zone_has_artery", {})
+	actor.zone_eff_kind    = s.get("zone_eff_kind", {})
+	actor.zone_eff_score   = s.get("zone_eff_score", {})
+	actor.zone_sensors     = s.get("zone_sensors", {})
+	actor.zone_effectors   = s.get("zone_effectors", {})
 
 # -------- zone compiler --------
 static func _label_from_token(token:String) -> String:
@@ -186,7 +212,6 @@ static func _zone_label(kind:StringName, cls:StringName, token:String, hint:Stri
 	var base := _label_from_token(token)
 	return "%s %s" % [base, String(cls)] if cls != &"" else (base if base != "" else String(cls))
 
-# --- add above _compile_zones ---
 static func _compute_terminal(plan: BodyPlan) -> Dictionary:
 	var has_child: Dictionary = {}
 	for p: BodyPart in plan.parts:
@@ -204,11 +229,13 @@ static func _compile_zones(plan: BodyPlan) -> Dictionary:
 		if id == &"": continue
 		if not zones.has(id):
 			var cls := p.core_role if (p.slot == &"core") else p.limb_class
-			var token := id.get_slice(".",1) if (p.slot == &"limb" and id.find(".") != -1) else ""
+			# StringName slicing → cast to String
+			var sid := String(id)
+			var token := sid.get_slice(".",1) if (p.slot == &"limb" and sid.find(".") != -1) else ""
 			zones[id] = {
 				"kind":p.slot, "class":cls, "token":token, "label":_zone_label(p.slot,cls,token,p.label_hint),
 				"cov":0, "vol":0, "artery":false,
-				"effectors": {}   # <--- multi-effectors here
+				"effectors": {}
 			}
 		var z:Dictionary = zones[id]
 		z["cov"] = int(z["cov"]) + p.coverage
@@ -224,15 +251,19 @@ static func _compile_zones(plan: BodyPlan) -> Dictionary:
 	return zones
 
 static func _normalize_weights(m:Dictionary) -> Dictionary:
-	var tot := 0; for v in m.values(): tot += int(v)
+	var tot := 0
+	for v in m.values(): tot += int(v)
 	if tot <= 0: return m.duplicate()
-	var out := {}; var acc := 0
+	var out := {}
+	var acc := 0
 	for k in m.keys():
 		var pct := int(round(100.0 * float(int(m[k])) / float(tot)))
-		out[k] = pct; acc += pct
+		out[k] = pct
+		acc += pct
 	if acc != 100:
-		var kmax : Array = m.keys()[0]
-		for k in m.keys(): if int(m[k]) > int(m[kmax]): kmax = k
+		var kmax: Variant = m.keys()[0]
+		for k in m.keys():
+			if int(m[k]) > int(m[kmax]): kmax = k
 		out[kmax] = int(out[kmax]) + (100 - acc)
 	return out
 

@@ -1,13 +1,17 @@
-[gd_resource type="Resource" script_class="Species" load_steps=3 format=3 uid="uid://b023mrg6hj8mj"]
+[gd_resource type="Resource" script_class="Species" load_steps=3 format=3 uid="uid://c6dtwc67u1ec5"]
 
-[ext_resource type="Resource" uid="uid://bqnqi0ypr5ev" path="res://creatures/bodyplans/HumanoidPlan.tres" id="1_apuh0"]
-[ext_resource type="Script" uid="uid://vita0yaqtv3h" path="res://creatures/_types/species.gd" id="2_34htq"]
+[ext_resource type="Resource" uid="uid://bqnqi0ypr5ev" path="res://creatures/bodyplans/HumanoidPlan.tres" id="1_0i0ss"]
+[ext_resource type="Script" uid="uid://vita0yaqtv3h" path="res://creatures/_types/species.gd" id="2_indun"]
 
 [resource]
-script = ExtResource("2_34htq")
-id = &"human"
-display_name = "Human"
-glyph = "H"
-plan = ExtResource("1_apuh0")
-tags = Array[StringName]([&"debug", &"humanoid"])
+script = ExtResource("2_indun")
+id = &"goblin"
+display_name = "Goblin"
+glyph = "g"
+fg = Color(0, 1, 0, 1)
+plan = ExtResource("1_0i0ss")
+tags = Array[StringName]([&"debug", &"humanoid", &"hostile"])
+base_stats = {
+"phase_per_tick": 18
+}
 metadata/_custom_type_script = "uid://vita0yaqtv3h"

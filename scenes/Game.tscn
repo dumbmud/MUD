@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://dvxo4vjigbnik"]
+
+[ext_resource type="PackedScene" uid="uid://btkvpjk4dhnnt" path="res://scenes/SimView.tscn" id="1_qbsmt"]
+[ext_resource type="PackedScene" uid="uid://dwy4dlk8kjtnp" path="res://scenes/SimCore.tscn" id="2_cpr0p"]
+
+[node name="Game" type="Node2D"]
+
+[node name="SimView" parent="." instance=ExtResource("1_qbsmt")]
+sim_core = NodePath("../SimCore")
+
+[node name="SimCore" parent="." instance=ExtResource("2_cpr0p")]
