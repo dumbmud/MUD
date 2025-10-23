@@ -1,11 +1,11 @@
-# res://creatures/_types/species_db.gd
+# res://autoloads/species_db.gd
 extends Node
 ## Autoload. Single source of truth for species data and accessors.
-## Also provides schema-migration helpers so sim code never reaches into raw stats.
+## Compiles Species resources into baked dictionaries so sim code never touches raw assets.
 
 const SPECIES_DIR := "res://creatures/species"  # content root
 
-# Compiled cache
+# Compiled caches
 var by_id: Dictionary = {}   # Dictionary[StringName, Dictionary]
 var by_tag: Dictionary = {}  # Dictionary[StringName, Array[StringName]]
 
@@ -13,6 +13,7 @@ func _ready() -> void:
 	_build_index(SPECIES_DIR)
 
 # ── Public API ────────────────────────────────────────────────────────────────
+
 func get_id(id_in: Variant) -> Dictionary:
 	var key: StringName
 	if id_in is StringName:
@@ -27,15 +28,12 @@ func ids_with_tag(tag: StringName) -> Array:
 	return by_tag.get(tag, [])
 
 func get_speed(species_id: StringName) -> int:
-	# Schema migration: prefer "phase_per_tick", fallback to "tu_per_tick".
+	# Speed is phase_per_tick only. Legacy fields are not supported.
 	var s := get_id(species_id)
 	if s.is_empty(): return 20
 	var stats: Dictionary = s.get("stats", {})
 	if stats.has("phase_per_tick"):
 		return clamp(int(stats["phase_per_tick"]), 1, 100000)
-	if stats.has("tu_per_tick"):
-		# Legacy key. Treat as phase_per_tick.
-		return clamp(int(stats["tu_per_tick"]), 1, 100000)
 	return 20
 
 func apply_to(species_id: Variant, actor: Actor) -> void:
@@ -75,6 +73,7 @@ func apply_to(species_id: Variant, actor: Actor) -> void:
 	actor.zone_effectors  = s["zone_effectors"]
 
 # ── Build / index ────────────────────────────────────────────────────────────
+
 func _build_index(root: String) -> void:
 	by_id.clear()
 	by_tag.clear()
@@ -113,10 +112,10 @@ func _scan_dir(path: String) -> void:
 	if d == null: return
 	d.list_dir_begin()
 	while true:
-		var name := d.get_next()
-		if name == "": break
-		if name.begins_with("_"): continue
-		var full := path.path_join(name)
+		var dname := d.get_next()
+		if dname == "": break
+		if dname.begins_with("_"): continue
+		var full := path.path_join(dname)
 		if d.current_is_dir():
 			_scan_dir(full)
 		elif full.get_extension() in ["tres","res"]:
@@ -130,6 +129,7 @@ func _scan_dir(path: String) -> void:
 	d.list_dir_end()
 
 # ── Compile Species resource → baked dict ────────────────────────────────────
+
 func _compile_species(sres: Species) -> Dictionary:
 	var tags := _dedupe(sres.tags.duplicate())
 	var stats := sres.base_stats.duplicate()
@@ -153,22 +153,25 @@ func _compile_species(sres: Species) -> Dictionary:
 		zone_has_artery[id] = bool(z["artery"]) or (zone_organs[id].find(&"artery") != -1)
 		zone_labels[id] = z["label"]
 
-		# multi-effectors: copy map
-		zone_effectors[id] = z["effectors"]  # {kind->score}
+		# Copy effectors map as-is (kind → score)
+		zone_effectors[id] = z["effectors"]
 
-		# legacy primary choice: prefer grasper else max score
+		# Primary effector choice: prefer grasper, else highest score deterministically.
+		var eff: Dictionary = z["effectors"]
 		var pk: StringName = &""
 		var ps := -1.0
-		for k in (z["effectors"] as Dictionary).keys():
-			var sc := float(z["effectors"][k])
-			if k == &"grasper":
-				if sc > ps: pk = k; ps = sc
-			elif pk != &"grasper" and sc > ps:
-				pk = k; ps = sc
+		for k in eff.keys():
+			var sc := float(eff[k])
+			if sc > ps:
+				pk = k
+				ps = sc
+		if eff.has(&"grasper"):
+			pk = &"grasper"
+			ps = float(eff[&"grasper"])
 		zone_eff_kind[id] = pk
 		zone_eff_score[id] = max(ps, 0.0)
 
-	# sensors: max per zone per kind
+	# Sensors: per zone per kind = max(part scores)
 	var zone_sensors := {}
 	if sres.plan != null:
 		for p: BodyPart in sres.plan.parts:
@@ -176,7 +179,8 @@ func _compile_species(sres: Species) -> Dictionary:
 			if id == &"" or p.sensor_kind == &"": continue
 			if not zone_sensors.has(id): zone_sensors[id] = {}
 			var prev := float(zone_sensors[id].get(p.sensor_kind, 0.0))
-			if p.sensor_score > prev: zone_sensors[id][p.sensor_kind] = p.sensor_score
+			if p.sensor_score > prev:
+				zone_sensors[id][p.sensor_kind] = p.sensor_score
 
 	return {
 		"id": sres.id, "name": sres.display_name, "glyph": sres.glyph, "fg": sres.fg,
@@ -197,6 +201,7 @@ func _compile_species(sres: Species) -> Dictionary:
 	}
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
 static func _dedupe(arr: Array) -> Array:
 	var seen := {}
 	var out: Array = []
@@ -206,7 +211,6 @@ static func _dedupe(arr: Array) -> Array:
 			out.append(v)
 	return out
 
-# Token helpers
 static func _label_from_token(token: String) -> String:
 	var TOK := {"L":"left","R":"right","FL":"front left","FR":"front right","RL":"rear left","RR":"rear right"}
 	return TOK.get(token, token)
@@ -245,7 +249,7 @@ static func _compile_zones(plan: BodyPlan) -> Dictionary:
 		z["cov"] = int(z["cov"]) + p.coverage
 		z["vol"] = int(z["vol"]) + p.volume
 		z["artery"] = bool(z["artery"]) or p.has_artery
-		# gather effectors (prefer terminal’s value; always keep max)
+		# Gather effectors: prefer terminal’s data when tieing at equal score.
 		if p.effector_kind != &"":
 			var eff: Dictionary = z["effectors"]
 			var prev := float(eff.get(p.effector_kind, 0.0))

@@ -1,6 +1,9 @@
 # res://core/verbs/move_verb.gd
 extends Verb
 class_name MoveVerb
+##
+## Atomically move one tile if passable and unoccupied.
+## Corner rule: diagonal allowed if at least one adjacent orthogonal is passable.
 
 const COST_CARDINAL := 100
 const COST_DIAGONAL := 141
@@ -11,10 +14,11 @@ static func _cost_for_dir(d: Vector2i) -> int:
 static func _move_blocked(sim: SimManager, from: Vector2i, dir: Vector2i, target: Vector2i) -> bool:
 	var world := sim.world
 	if !world.is_passable(target): return true
+	# Diagonal squeeze check: forbid only when both orthogonals are impassable.
 	if abs(dir.x) + abs(dir.y) == 2:
 		var side_a := Vector2i(from.x + dir.x, from.y)
 		var side_b := Vector2i(from.x, from.y + dir.y)
-		if world.is_wall(side_a) and world.is_wall(side_b):
+		if !world.is_passable(side_a) and !world.is_passable(side_b):
 			return true
 	return false
 
@@ -38,7 +42,7 @@ func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	var t := a.grid_pos + d
 	if _move_blocked(sim, a.grid_pos, d, t): return false
 	if GridOccupancy.has_pos(t): return false
-	# mutate occupancy + actor pos
+	# Mutate occupancy then actor position.
 	if !GridOccupancy.move(a.actor_id, t): return false
 	a.grid_pos = t
 	return true

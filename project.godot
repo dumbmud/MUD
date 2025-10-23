@@ -22,6 +22,7 @@ VerbRegistry="*res://autoloads/verb_registry.gd"
 VerbsInit="*res://autoloads/verbs_init.gd"
 MessageBus="*res://autoloads/message_bus.gd"
 GridOccupancy="*res://autoloads/grid_occupancy.gd"
+InputManager="*res://autoloads/input_manager.gd"
 
 [display]
 

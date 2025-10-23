@@ -16,10 +16,8 @@ func is_wall(p: Vector2i) -> bool:
 		return true
 
 	# 1) Partitions with door gaps at y=0
-	if p.x == -12 and not (p.y == 0 and _in_y(p.y, GRID_MIN.y+1, GRID_MAX.y-1)):
-		return true
-	if p.x == 12 and not (p.y == 0 and _in_y(p.y, GRID_MIN.y+1, GRID_MAX.y-1)):
-		return true
+	if p.x == -12 and p.y != 0: return true
+	if p.x == 12  and p.y != 0: return true
 
 	# Left section: race lane
 	if (p.y == -9 or p.y == -7) and _in_x(p.x, -18, -13):

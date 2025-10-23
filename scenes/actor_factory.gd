@@ -1,3 +1,4 @@
+# res://scenes/actor_factory.gd
 class_name ActorFactory
 extends RefCounted
 

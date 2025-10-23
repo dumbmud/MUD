@@ -1,3 +1,4 @@
+# res://scenes/console.gd
 class_name Console
 extends Node2D
 

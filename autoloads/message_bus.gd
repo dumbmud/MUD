@@ -1,4 +1,4 @@
-# res://core/support/message_bus.gd
+# res://autoloads/message_bus.gd
 # Add as Autoload: Name "MessageBus"
 extends Node
 
