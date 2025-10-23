@@ -211,11 +211,21 @@ func _redraw() -> void:
 func resolve_cell(p: Vector2i) -> Variant:
 	var pl: Actor = _player()
 	if p == pl.grid_pos:
-		return {"ch": pl.glyph, "fg": pl.fg_color}
+		return {
+			"ch": pl.glyph,
+			"fg": pl.fg_color,
+			"facing": pl.facing,
+			"rel": 1   # player = ally
+		}
 	for a in actors:
 		if a.is_player: continue
 		if a.grid_pos == p:
-			return {"ch": a.glyph, "fg": a.fg_color}
+			return {
+				"ch": a.glyph,
+				"fg": a.fg_color,
+				"facing": a.facing,
+				"rel": a.relation_to_player   # -1/0/1
+			}
 	return world.glyph(p)
 
 # ── run policy helpers ───────────────────────────────────────────────────────

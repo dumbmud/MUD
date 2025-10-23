@@ -1,6 +1,12 @@
 # res://scenes/console.gd
 class_name Console
 extends Node2D
+##
+## ASCII console renderer with optional facing overlay.
+## Overlay: thin border segment indicating actor facing and relation
+## (-1 hostile=red, 0 neutral=blue, 1 ally=green).
+##  - Cardinal: centered short segment on that side.
+##  - Diagonal: short L-corner in that corner.
 
 @export var font: FontFile
 @export var font_size := 64
@@ -58,6 +64,8 @@ func _draw() -> void:
 			var ch: String = ""
 			var fg: Color = Color.WHITE
 			var bg: Color = Color.BLACK
+			var facing: Vector2i = Vector2i.ZERO
+			var rel: int = 0
 
 			if cell is String:
 				ch = cell
@@ -65,14 +73,20 @@ func _draw() -> void:
 				ch = cell.get("ch", cell.get("glyph", ""))
 				fg = cell.get("fg", cell.get("color", Color.WHITE))
 				bg = cell.get("bg", Color.BLACK)
+				# Optional overlay payload
+				facing = cell.get("facing", Vector2i.ZERO)
+				rel = int(cell.get("rel", 0))
 			elif cell is Array:
 				if cell.size() > 0: ch = cell[0]
 				if cell.size() > 1: fg = cell[1]
 				if cell.size() > 2: bg = cell[2]
 
-
 			# draw background per cell
 			draw_rect(Rect2(Vector2(x_px, y_px), Vector2(cell_px, cell_px)), bg, true)
+
+			# draw facing overlay if provided
+			if facing != Vector2i.ZERO:
+				_draw_facing_border(Vector2(x_px, y_px), facing, rel)
 
 			# draw one foreground glyph if any
 			if ch != "" and ch != " ":
@@ -85,3 +99,82 @@ func _draw() -> void:
 					font_size,
 					fg
 				)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Facing overlay: thin border segment
+# ─────────────────────────────────────────────────────────────────────────────
+
+func _rel_color(rel: int) -> Color:
+	if rel < 0:   return Color(1, 0, 0)   # hostile: red
+	if rel > 0:   return Color(0, 1, 0)   # ally: green
+	return Color(0.25, 0.5, 1.0)          # neutral: blue
+
+func _draw_facing_border(origin: Vector2, dir: Vector2i, rel: int) -> void:
+	var inset: int = max(1, int(cell_px * 0.06))
+	var thick: float = max(1.0, float(cell_px) * 0.045)  # thinner
+	var seg: int = max(4, int(cell_px * 0.45))           # slightly longer cardinals
+	var corner_len: int = max(4, int(cell_px * 0.28))
+
+	var half: float = thick * 0.5
+
+	var x0 := origin.x
+	var y0 := origin.y
+	var x1 := x0 + cell_px
+	var y1 := y0 + cell_px
+	var cx := (x0 + x1) * 0.5
+	var cy := (y0 + y1) * 0.5
+
+	var c := _rel_color(rel)
+
+	var d := dir
+	if d.x != 0: d.x = sign(d.x)
+	if d.y != 0: d.y = sign(d.y)
+
+	if abs(d.x) + abs(d.y) == 1:
+		# Cardinal: centered short segment on that side.
+		if d.y == -1:
+			var sx := cx - seg * 0.5
+			var ex := cx + seg * 0.5
+			var y := y0 + inset
+			draw_line(Vector2(sx, y), Vector2(ex, y), c, thick)
+		elif d.y == 1:
+			var sx := cx - seg * 0.5
+			var ex := cx + seg * 0.5
+			var y := y1 - inset
+			draw_line(Vector2(sx, y), Vector2(ex, y), c, thick)
+		elif d.x == -1:
+			var sy := cy - seg * 0.5
+			var ey := cy + seg * 0.5
+			var x := x0 + inset
+			draw_line(Vector2(x, sy), Vector2(x, ey), c, thick)
+		else:
+			var sy := cy - seg * 0.5
+			var ey := cy + seg * 0.5
+			var x := x1 - inset
+			draw_line(Vector2(x, sy), Vector2(x, ey), c, thick)
+	else:
+		# Diagonal corners with tiny overlap to remove gaps.
+		if d.y == -1 and d.x == 1:
+			# NE
+			var y := y0 + inset
+			var x := x1 - inset
+			draw_line(Vector2(x - corner_len, y), Vector2(x + half, y), c, thick)
+			draw_line(Vector2(x, y - half), Vector2(x, y + corner_len), c, thick)
+		elif d.y == 1 and d.x == 1:
+			# SE
+			var y := y1 - inset
+			var x := x1 - inset
+			draw_line(Vector2(x - corner_len, y), Vector2(x + half, y), c, thick)
+			draw_line(Vector2(x, y + half), Vector2(x, y - corner_len), c, thick)
+		elif d.y == 1 and d.x == -1:
+			# SW
+			var y := y1 - inset
+			var x := x0 + inset
+			draw_line(Vector2(x - half, y), Vector2(x + corner_len, y), c, thick)
+			draw_line(Vector2(x, y + half), Vector2(x, y - corner_len), c, thick)
+		elif d.y == -1 and d.x == -1:
+			# NW
+			var y := y0 + inset
+			var x := x0 + inset
+			draw_line(Vector2(x - half, y), Vector2(x + corner_len, y), c, thick)
+			draw_line(Vector2(x, y - half), Vector2(x, y + corner_len), c, thick)

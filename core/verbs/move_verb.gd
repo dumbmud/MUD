@@ -4,6 +4,7 @@ class_name MoveVerb
 ##
 ## Atomically move one tile if passable and unoccupied.
 ## Corner rule: diagonal allowed if at least one adjacent orthogonal is passable.
+## Also updates actor facing on successful commit.
 
 const COST_CARDINAL := 100
 const COST_DIAGONAL := 141
@@ -42,7 +43,8 @@ func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	var t := a.grid_pos + d
 	if _move_blocked(sim, a.grid_pos, d, t): return false
 	if GridOccupancy.has_pos(t): return false
-	# Mutate occupancy then actor position.
+	# Commit: update facing then mutate occupancy and actor pos.
+	a.set_facing(d)
 	if !GridOccupancy.move(a.actor_id, t): return false
 	a.grid_pos = t
 	return true

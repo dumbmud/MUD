@@ -7,7 +7,7 @@
 script = ExtResource("2_34htq")
 id = &"human"
 display_name = "Human"
-glyph = "H"
+glyph = "?"
 plan = ExtResource("1_apuh0")
 tags = Array[StringName]([&"debug", &"humanoid"])
 metadata/_custom_type_script = "uid://vita0yaqtv3h"

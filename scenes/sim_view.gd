@@ -12,7 +12,7 @@ var zoom_levels: Array[float] = [0.1, 0.5, 1.0, 2.0, 3.0, 4.0]
 var zoom_index := 2
 var visible_w := 0
 var visible_h := 0
-const CELL_PX := 70
+const CELL_PX := 64
 const GRID_W := 481
 const GRID_H := 271
 
