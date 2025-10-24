@@ -1,8 +1,15 @@
 # res://scenes/sim_view.gd
 extends Node2D
 class_name SimView
+##
+## View wiring for the pure scheduler:
+## - Subscribes to SimManager signals and redraws the Console.
+## - Keeps camera + zoom controls and drives HUD.
+## - Builds cell resolver here (UI concern), not in the scheduler.
 
 @export var sim_core: NodePath
+@export var tracked_actor_id: int = 0
+
 @onready var sim: SimManager = get_node(sim_core) as SimManager
 @onready var cam: Camera2D     = $Camera
 @onready var console: Console  = $Console
@@ -22,9 +29,13 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_on_view_changed)
 	_apply_zoom()
 	console.configure(CELL_PX, visible_w, visible_h, GRID_W, GRID_H)
-	# Subscribe to core
-	sim.redraw.connect(_on_core_redraw)
-	sim.hud.connect(_on_core_hud)
+	console.set_resolver(Callable(self, "resolve_cell"))  # set once
+	# Subscribe to sim
+	sim.tick_advanced.connect(_on_sim_tick)
+	sim.state_changed.connect(_on_sim_state_changed)
+	# Initial draw
+	_redraw()
+	_update_hud()
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("zoom_in"):
@@ -37,31 +48,69 @@ func _input(event: InputEvent) -> void:
 		zoom_index = 2
 		_apply_zoom()
 
-func _on_core_redraw(player_world: Vector2i, resolver: Callable) -> void:
-	console.redraw(player_world, resolver)
+# ── signal handlers ──────────────────────────────────────────────────────────
 
-func _on_core_hud(
-	tick:int,
-	pos:Vector2i,
-	mode_label:String,
-	phase:int,
-	phase_per_tick:int,
-	is_busy:bool,
-	steps:int
-) -> void:
+func _on_sim_tick(_t: int) -> void:
+	_redraw()
+	_update_hud()
+
+func _on_sim_state_changed() -> void:
+	_redraw()
+	_update_hud()
+
+# ── drawing / HUD ────────────────────────────────────────────────────────────
+
+func _tracked_actor() -> Actor:
+	var a: Actor = sim.get_actor(tracked_actor_id) as Actor
+	if a != null:
+		return a
+	if sim.actors.size() > 0:
+		return sim.actors[0]
+	return null
+
+func _redraw() -> void:
+	var a: Actor = _tracked_actor()
+	if a == null:
+		return
+	console.redraw(a.grid_pos)
+
+func resolve_cell(p: Vector2i) -> Variant:
+	# Prefer actors via occupancy, else world glyph.
+	var id := GridOccupancy.id_at(p)
+	if id != -1:
+		var a: Actor = sim.get_actor(id) as Actor
+		if a != null:
+			return {
+				"ch": a.glyph,
+				"fg": a.fg_color,
+				"facing": a.facing,
+				"rel": a.relation_to_player
+			}
+	# World glyph
+	if sim.world != null:
+		return sim.world.glyph(p)
+	return " "
+
+func _update_hud() -> void:
+	var a: Actor = _tracked_actor()
+	if a == null:
+		return
+	var mode_label := "RT" if (GameLoop.real_time) else "TB"
+	var zoom := zoom_levels[zoom_index]
 	hud.set_debug(
-		tick,
-		pos,
-		0,
-		zoom_levels[zoom_index],
+		sim.tick_count,
+		a.grid_pos,
+		zoom,
 		visible_w,
 		visible_h,
 		mode_label,
-		phase,
-		phase_per_tick,
-		is_busy,
-		steps
+		a.phase,
+		a.phase_per_tick,
+		sim.in_tick,
+		sim.actors.size()
 	)
+
+# ── view sizing / zoom ───────────────────────────────────────────────────────
 
 func _on_view_changed() -> void:
 	_update_visible()

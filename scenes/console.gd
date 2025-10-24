@@ -3,10 +3,12 @@ class_name Console
 extends Node2D
 ##
 ## ASCII console renderer with optional facing overlay.
-## Overlay: thin border segment indicating actor facing and relation
-## (-1 hostile=red, 0 neutral=blue, 1 ally=green).
-##  - Cardinal: centered short segment on that side.
-##  - Diagonal: short L-corner in that corner.
+## Resolver is an explicit dependency set via `set_resolver()`.
+## - draw uses `_get_cell(p: Vector2i)` which must return:
+##     * String               → glyph only
+##     * Dictionary           → { ch|glyph, fg|color, bg?, facing?, rel? }
+##     * Array                → [ch, fg?, bg?]
+## - If unset, a safe blank resolver is used.
 
 @export var font: FontFile
 @export var font_size := 64
@@ -19,10 +21,10 @@ var grid_rows := 0
 
 var _view_center := Vector2i.ZERO
 var _player := Vector2i.ZERO
-var _get_cell: Callable
-
 var _baseline := 0.0
 var _view_origin_px := Vector2i.ZERO
+
+var _get_cell: Callable = Callable(self, "_blank_cell")   # safe default
 
 func configure(px:int, vw:int, vh:int, gw:int, gh:int) -> void:
 	cell_px = px
@@ -35,6 +37,13 @@ func configure(px:int, vw:int, vh:int, gw:int, gh:int) -> void:
 	_compute_metrics()
 	queue_redraw()
 
+func set_resolver(c: Callable) -> void:
+	_get_cell = c if c.is_valid() else Callable(self, "_blank_cell")
+
+func redraw(player_world: Vector2i) -> void:
+	_player = player_world
+	queue_redraw()
+
 func _compute_metrics() -> void:
 	if font == null: return
 	font.subpixel_positioning = TextServer.SUBPIXEL_POSITIONING_DISABLED
@@ -44,13 +53,9 @@ func _compute_metrics() -> void:
 	var vpad: float = (cell_px - h) * 0.5
 	_baseline = roundi(vpad + asc)
 
-func redraw(player_world: Vector2i, get_world_callable: Callable) -> void:
-	_player = player_world
-	_get_cell = get_world_callable
-	queue_redraw()
-
 func _draw() -> void:
 	if font == null: return
+	if !_get_cell.is_valid(): return
 
 	for sy in range(view_rows):
 		var y_px := _view_origin_px.y + sy * cell_px
@@ -73,7 +78,6 @@ func _draw() -> void:
 				ch = cell.get("ch", cell.get("glyph", ""))
 				fg = cell.get("fg", cell.get("color", Color.WHITE))
 				bg = cell.get("bg", Color.BLACK)
-				# Optional overlay payload
 				facing = cell.get("facing", Vector2i.ZERO)
 				rel = int(cell.get("rel", 0))
 			elif cell is Array:
@@ -111,10 +115,9 @@ func _rel_color(rel: int) -> Color:
 
 func _draw_facing_border(origin: Vector2, dir: Vector2i, rel: int) -> void:
 	var inset: int = max(1, int(cell_px * 0.06))
-	var thick: float = max(1.0, float(cell_px) * 0.045)  # thinner
-	var seg: int = max(4, int(cell_px * 0.45))           # slightly longer cardinals
+	var thick: float = max(1.0, float(cell_px) * 0.045)
+	var seg: int = max(4, int(cell_px * 0.45))
 	var corner_len: int = max(4, int(cell_px * 0.28))
-
 	var half: float = thick * 0.5
 
 	var x0 := origin.x
@@ -155,26 +158,29 @@ func _draw_facing_border(origin: Vector2, dir: Vector2i, rel: int) -> void:
 	else:
 		# Diagonal corners with tiny overlap to remove gaps.
 		if d.y == -1 and d.x == 1:
-			# NE
 			var y := y0 + inset
 			var x := x1 - inset
 			draw_line(Vector2(x - corner_len, y), Vector2(x + half, y), c, thick)
 			draw_line(Vector2(x, y - half), Vector2(x, y + corner_len), c, thick)
 		elif d.y == 1 and d.x == 1:
-			# SE
 			var y := y1 - inset
 			var x := x1 - inset
 			draw_line(Vector2(x - corner_len, y), Vector2(x + half, y), c, thick)
 			draw_line(Vector2(x, y + half), Vector2(x, y - corner_len), c, thick)
 		elif d.y == 1 and d.x == -1:
-			# SW
 			var y := y1 - inset
 			var x := x0 + inset
 			draw_line(Vector2(x - half, y), Vector2(x + corner_len, y), c, thick)
 			draw_line(Vector2(x, y + half), Vector2(x, y - corner_len), c, thick)
 		elif d.y == -1 and d.x == -1:
-			# NW
 			var y := y0 + inset
 			var x := x0 + inset
 			draw_line(Vector2(x - half, y), Vector2(x + corner_len, y), c, thick)
 			draw_line(Vector2(x, y - half), Vector2(x, y + corner_len), c, thick)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Safe default resolver
+# ─────────────────────────────────────────────────────────────────────────────
+
+func _blank_cell(_p: Vector2i) -> String:
+	return " "

@@ -8,6 +8,10 @@ script = ExtResource("2_34htq")
 id = &"human"
 display_name = "Human"
 glyph = "?"
+fg = Color(1, 0, 1, 1)
 plan = ExtResource("1_apuh0")
 tags = Array[StringName]([&"debug", &"humanoid"])
+base_stats = {
+"phase_per_tick": 200
+}
 metadata/_custom_type_script = "uid://vita0yaqtv3h"

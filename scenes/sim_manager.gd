@@ -2,241 +2,158 @@
 extends Node2D
 class_name SimManager
 ##
-## Pure scheduler: ticks, phase regen/cap, activity creation, commit loop, and signals.
-## Ignorant of verb semantics and input specifics. Controllers supply commands.
-##
-## External collaborations:
-##   - World node (must implement WorldAPI)
-##   - Autoloads:
-##       * VerbRegistry: verb lookup
-##       * GridOccupancy: id ↔ pos claims
-##       * MessageBus: user-facing messages (used by controllers, not here)
-##       * InputManager: routes InputEvent → PlayerController taps/holds
-##
-## Controllers:
-##   - One CommandSource per actor in `controller_by_id`.
-##   - At boundaries, SimManager asks the source for a command via `dequeue(a, self)`.
-##   - TB autostart: SimManager prefetches a pending command non-destructively for the player
-##     by calling `dequeue` *and caching* the result until the next boundary.
+## Pure scheduler.
+## - No knowledge of TB/RT or “player”.
+## - Time unit = tick; per-tick budget = Actor.phase_per_tick (uniform, default 100).
+## - Actions are activities: remaining phase is spent across rounds; commit at 0.
+## - Public stepping:
+##     * step_tick(): advance one full tick (begin → rounds until quiet → end).
+##     * step_round(stop_on_actor_id := -1): advance a single round; optionally
+##         stop early as soon as `stop_on_actor_id` commits. Returns:
+##         { "spent": bool, "stopped_on_target": bool }.
+##     * end_tick_if_quiet(): finalize the current tick if nobody can spend more.
 
-signal redraw(player_pos: Vector2i, resolver: Callable)
-signal hud(tick:int, pos:Vector2i, mode_label:String, phase:int, phase_per_tick:int, is_busy:bool, steps:int)
+signal tick_advanced(tick: int)
+signal state_changed()
 
-@onready var world: WorldAPI = $WorldTest
+var world: WorldAPI = null
 
-# Controllers
-const PlayerControllerClass = preload("res://controllers/player_controller.gd")
-const AIPatrolControllerClass = preload("res://controllers/ai_patrol_controller.gd")
+var tick_count: int = 0
+var in_tick: bool = false
 
-# Game modes
-enum GameMode { TURN_BASED, REAL_TIME }
-@export var mode: GameMode = GameMode.TURN_BASED
-
-# Time + phase
-const TICK_SEC := 0.1
-const PHASE_MAX := 1_000_000
-var tick_accum := 0.0
-var tick_count := 0
-var ticks_running := false
-
-# Actors and control
 var actors: Array[Actor] = []
-var next_actor_id := 1
-var controller_by_id: Dictionary = {}                  # id -> CommandSource
-var activity_by_id: Dictionary[int, Activity] = {}     # id -> Activity or null
-var resume_table: Dictionary = {}                      # key -> Activity (verbs opt-in)
-var pending_cmd_by_id: Dictionary[int, Dictionary] = {}# id -> {verb,args} prefetched
+var actor_by_id: Dictionary = {}            # int -> Actor
+var controller_by_id: Dictionary = {}       # int -> CommandSource
+var activity_by_id: Dictionary = {}         # int -> Activity or null
+var resume_table: Dictionary = {}           # Variant -> Activity
+var pending_cmd_by_id: Dictionary = {}      # int -> {verb,args}
 
-# RNG
-var rng := RandomNumberGenerator.new()
-@export var rng_seed: int = 123456789
+# ── wiring ───────────────────────────────────────────────────────────────────
 
-func _ready() -> void:
-	rng.seed = rng_seed
+func set_world(w: WorldAPI) -> void:
+	world = w
 
-	# Player
-	var p := ActorFactory.spawn(0, Vector2i.ZERO, &"human", true)
-	actors.append(p)
-	GridOccupancy.claim(p.actor_id, p.grid_pos)
-	activity_by_id[p.actor_id] = null
-
-	# Attach player controller and hand it to InputManager
-	var pc = PlayerControllerClass.new()
-	controller_by_id[p.actor_id] = pc
-	InputManager.set_player_controller(pc)  # Autoload at res://autoloads/input_manager.gd
-
-	# NPCs (simple patrol controllers)
-	_add_npc(&"goblin", Vector2i(-15, -8), Vector2i(1, 0))
-	_add_npc(&"goblin", Vector2i(-18, 0),  Vector2i(1, 0))
-
-	_redraw()
-
-func _add_npc(species_id: StringName, start: Vector2i, dir: Vector2i) -> void:
-	var a: Actor = ActorFactory.spawn(next_actor_id, start, species_id, false)
-	next_actor_id += 1
+func add_actor(a: Actor, src: CommandSource) -> void:
 	actors.append(a)
-	GridOccupancy.claim(a.actor_id, a.grid_pos)
+	actor_by_id[a.actor_id] = a
+	controller_by_id[a.actor_id] = src
 	activity_by_id[a.actor_id] = null
-	var ai = AIPatrolControllerClass.new()
-	ai.set_initial_dir(dir)
-	controller_by_id[a.actor_id] = ai
+	GridOccupancy.claim(a.actor_id, a.grid_pos)
 
-func _input(event: InputEvent) -> void:
-	# Time mode toggle stays here since it affects the scheduler itself.
-	if event.is_action_pressed("time_mode_toggle"):
-		mode = GameMode.REAL_TIME if mode == GameMode.TURN_BASED else GameMode.TURN_BASED
-		# In RT, always run. In TB, autostart will kick in via prefetch below.
-		ticks_running = true if mode == GameMode.REAL_TIME else _should_keep_running_TB()
+func get_actor(id: int) -> Actor:
+	return actor_by_id.get(id, null)
 
-func _process(dt: float) -> void:
-	# TB autostart: if stopped and a valid command is available, prefetch it and run.
-	if mode == GameMode.TURN_BASED and !ticks_running and !_is_busy(_player()):
-		if _prefetch_player_if_available():
-			ticks_running = true
+# ── stepping API ─────────────────────────────────────────────────────────────
 
-	if mode == GameMode.REAL_TIME or (mode == GameMode.TURN_BASED and ticks_running):
-		tick_accum += dt
-		while tick_accum >= TICK_SEC:
-			_tick()
-			tick_accum -= TICK_SEC
+func step_tick() -> void:
+	_begin_tick_if_needed()
+	while true:
+		var r := step_round(-1)
+		if !bool(r["spent"]):
+			_end_tick()
+			break
 
-func _tick() -> void:
-	tick_count += 1
+func step_round(stop_on_actor_id: int = -1) -> Dictionary:
+	# Returns {"spent": bool, "stopped_on_target": bool}
+	_begin_tick_if_needed()
+	var spent_any := false
+	var stopped := false
 
-	# Phase regen with cap
+	# Stable order by actor_id each tick
 	for a in actors:
-		a.phase = min(a.phase + a.phase_per_tick, PHASE_MAX)
+		if a.phase <= 0:
+			continue
 
-	var player_steps_this_tick := 0
+		# Acquire or continue an activity
+		var act: Activity = activity_by_id.get(a.actor_id, null)
+		if act == null:
+			var cmd_v: Variant = _acquire_command(a)
+			if cmd_v != null:
+				var cmd: Dictionary = cmd_v
+				var verb_name: StringName = cmd.get("verb", &"")
+				var args: Dictionary = cmd.get("args", {})
+				var verb := VerbRegistry.get_verb(verb_name)
+				if verb != null:
+					var key: Variant = verb.resumable_key(a, args, self)
+					if key != null and resume_table.has(key):
+						act = resume_table[key]
+					else:
+						var need: int = max(1, int(verb.phase_cost(a, args, self)))
+						act = Activity.from(verb_name, args, need, key)
+					activity_by_id[a.actor_id] = act
 
-	# Stable order: player first, then ascending IDs
-	actors.sort_custom(func(x, y): return x.actor_id < y.actor_id)
-
-	# Multi-commit rounds inside one tick
-	var round_idx := 0
-	const MAX_ROUNDS_PER_TICK := 32
-	while round_idx < MAX_ROUNDS_PER_TICK:
-		var commits := 0
-
-		for a in actors:
-			# Acquire or continue an activity
-			var act: Activity = activity_by_id.get(a.actor_id, null)
-			if act == null:
-				var cmd_v: Variant = _acquire_command(a)
-				if cmd_v != null:
-					var cmd_d: Dictionary = cmd_v
-					var verb_name: StringName = cmd_d["verb"]
-					var args: Dictionary = cmd_d["args"]
-					var verb := VerbRegistry.get_verb(verb_name)
-					if verb != null:
-						var key: Variant = verb.resumable_key(a, args, self)
-						if key != null and resume_table.has(key):
-							act = resume_table[key]
-						else:
-							var need := verb.phase_cost(a, args, self)
-							act = Activity.from(verb_name, args, need, key)
-						activity_by_id[a.actor_id] = act
-
-			# Commit if enough phase
-			act = activity_by_id.get(a.actor_id, null)
-			if act != null and a.phase >= act.remaining:
-				a.phase -= act.remaining
+		# Spend and possibly commit
+		act = activity_by_id.get(a.actor_id, null)
+		if act != null:
+			var spend: int = min(a.phase, act.remaining)
+			if spend > 0:
+				a.phase -= spend
+				act.remaining -= spend
+				spent_any = true
+			if act.remaining <= 0:
 				var verb2 := VerbRegistry.get_verb(act.verb)
-				var ok := verb2 != null and verb2.apply(a, act.args, self)
+				var _ok: bool = verb2 != null and verb2.apply(a, act.args, self)
 				if act.resume_key != null:
 					resume_table.erase(act.resume_key)
 				activity_by_id[a.actor_id] = null
-				commits += 1
+				if a.actor_id == stop_on_actor_id:
+					stopped = true
+					emit_signal("state_changed")
+					break
 
-				# Debug counter for steps (optional; remove to be verb-agnostic)
-				if a.is_player and act.verb == &"Move" and ok:
-					player_steps_this_tick += 1
+	emit_signal("state_changed")
+	return {"spent": spent_any, "stopped_on_target": stopped}
 
-		if commits == 0:
-			break
-		round_idx += 1
+func end_tick_if_quiet() -> void:
+	# External helper when driving rounds manually (TB). Ends the tick
+	# if nobody can spend more this tick (i.e., all phase == 0).
+	if !in_tick:
+		return
+	for a in actors:
+		if a.phase > 0:
+			return
+	_end_tick()
 
-	_redraw()
-	emit_signal(
-		"hud",
-		tick_count,
-		_player().grid_pos,
-		("RT" if mode == GameMode.REAL_TIME else "TB"),
-		_player().phase,
-		_player().phase_per_tick,
-		_is_busy(_player()),
-		player_steps_this_tick
-	)
+# ── internals ────────────────────────────────────────────────────────────────
 
-	# TB run/stop policy
-	if mode == GameMode.TURN_BASED:
-		ticks_running = _should_keep_running_TB()
-		if !ticks_running:
-			tick_accum = 0.0
+func _begin_tick_if_needed() -> void:
+	if in_tick:
+		return
+	in_tick = true
+	# Reset per-tick budgets
+	for a in actors:
+		a.phase = a.phase_per_tick
+	# Stable order: ascending actor_id
+	actors.sort_custom(func(x, y): return x.actor_id < y.actor_id)
 
-# ── command acquisition ───────────────────────────────────────────────────────
+func _end_tick() -> void:
+	if !in_tick:
+		return
+	in_tick = false
+	tick_count += 1
+	emit_signal("tick_advanced", tick_count)
+	emit_signal("state_changed")
 
 func _acquire_command(a: Actor) -> Variant:
-	# Use prefetched command first if present (TB autostart path).
-	if pending_cmd_by_id.has(a.actor_id):
-		var cmd := pending_cmd_by_id[a.actor_id]
-		pending_cmd_by_id.erase(a.actor_id)
+	# Use prefetched command first (driver path for TB), else ask the source.
+	var id := a.actor_id
+	if pending_cmd_by_id.has(id):
+		var cmd: Dictionary = pending_cmd_by_id[id]
+		pending_cmd_by_id.erase(id)
 		return cmd
-
-	# Otherwise, ask the actor’s controller.
-	var src = controller_by_id.get(a.actor_id, null)
+	var src: CommandSource = controller_by_id.get(id, null)
 	return src.dequeue(a, self) if src != null else null
 
-func _prefetch_player_if_available() -> bool:
-	# Try to obtain one valid command for the player without advancing time.
-	# We *consume* the controller’s dequeue and stash it for the next boundary.
-	# This keeps SimManager ignorant of verbs and inputs and still lets TB autostart.
-	var pl := _player()
-	if controller_by_id.has(pl.actor_id) and !pending_cmd_by_id.has(pl.actor_id):
-		var src: CommandSource = controller_by_id[pl.actor_id]
-		var cmd : Variant = src.dequeue(pl, self)
-		if cmd != null:
-			pending_cmd_by_id[pl.actor_id] = cmd
-			return true
+func prefetch_command(actor_id: int) -> bool:
+	# Ask the controller once without advancing time and stash the result.
+	var a := get_actor(actor_id)
+	var src: CommandSource = controller_by_id.get(actor_id, null)
+	if a == null or src == null:
+		return false
+	if pending_cmd_by_id.has(actor_id):
+		return true
+	var cmd: Variant = src.dequeue(a, self)
+	if cmd != null:
+		pending_cmd_by_id[actor_id] = cmd
+		return true
 	return false
-
-# ── drawing / UI ─────────────────────────────────────────────────────────────
-
-func _player() -> Actor:
-	return actors[0]
-
-func _redraw() -> void:
-	emit_signal("redraw", _player().grid_pos, Callable(self, "resolve_cell"))
-
-func resolve_cell(p: Vector2i) -> Variant:
-	var pl: Actor = _player()
-	if p == pl.grid_pos:
-		return {
-			"ch": pl.glyph,
-			"fg": pl.fg_color,
-			"facing": pl.facing,
-			"rel": 1   # player = ally
-		}
-	for a in actors:
-		if a.is_player: continue
-		if a.grid_pos == p:
-			return {
-				"ch": a.glyph,
-				"fg": a.fg_color,
-				"facing": a.facing,
-				"rel": a.relation_to_player   # -1/0/1
-			}
-	return world.glyph(p)
-
-# ── run policy helpers ───────────────────────────────────────────────────────
-
-func _should_keep_running_TB() -> bool:
-	var pl := _player()
-	if _is_busy(pl): return true
-	# If we already have a prefetched command, keep running.
-	if pending_cmd_by_id.has(pl.actor_id): return true
-	# Otherwise try to prefetch now.
-	return _prefetch_player_if_available()
-
-func _is_busy(a: Actor) -> bool:
-	return activity_by_id.get(a.actor_id, null) != null

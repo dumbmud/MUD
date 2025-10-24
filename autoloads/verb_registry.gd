@@ -7,7 +7,6 @@ extends Node
 var _verbs: Dictionary = {}  # Dictionary[StringName, Verb]
 
 func register(verb_name: StringName, verb: Verb) -> void:
-	# Overwrites existing entry by design.
 	_verbs[verb_name] = verb
 
 func unregister(verb_name: StringName) -> void:

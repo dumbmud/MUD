@@ -2,12 +2,12 @@
 extends CommandSource
 class_name AIPatrolController
 ##
-## Tiny placeholder AI:
-## - Attempts to move in a fixed direction.
-## - If blocked, flips direction next time.
-## - In RT, injects Wait(1) when unable to move.
+## Minimal patrol AI:
+## - Try to move in a fixed direction.
+## - If blocked, flip direction and yield the rest of this tick (Wait(1)).
+## - No mode checks; scheduler is pure and mode-agnostic.
 
-var _dir := Vector2i(1, 0)
+var _dir: Vector2i = Vector2i(1, 0)
 
 func set_initial_dir(d: Vector2i) -> void:
 	_dir = Vector2i(clamp(d.x, -1, 1), clamp(d.y, -1, 1))
@@ -17,8 +17,6 @@ func dequeue(a: Actor, sim: SimManager) -> Variant:
 	var v := VerbRegistry.get_verb(&"Move")
 	if v != null and v.can_start(a, cmd["args"], sim):
 		return cmd
-	# Flip if blocked; try opposite on next boundary.
+	# Blocked: flip and yield this tick to avoid thrashing in rounds.
 	_dir = -_dir
-	if sim.mode == SimManager.GameMode.REAL_TIME:
-		return {"verb": &"Wait", "args": {"ticks": 1}}
-	return null
+	return {"verb": &"Wait", "args": {"ticks": 1}}

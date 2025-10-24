@@ -1,7 +1,9 @@
 # res://autoloads/species_db.gd
 extends Node
+##
 ## Autoload. Single source of truth for species data and accessors.
 ## Compiles Species resources into baked dictionaries so sim code never touches raw assets.
+## Phase regen is uniform and NOT controlled here.
 
 const SPECIES_DIR := "res://creatures/species"  # content root
 
@@ -27,44 +29,35 @@ func get_id(id_in: Variant) -> Dictionary:
 func ids_with_tag(tag: StringName) -> Array:
 	return by_tag.get(tag, [])
 
-func get_speed(species_id: StringName) -> int:
-	# Speed is phase_per_tick only. Legacy fields are not supported.
-	var s := get_id(species_id)
-	if s.is_empty(): return 20
-	var stats: Dictionary = s.get("stats", {})
-	if stats.has("phase_per_tick"):
-		return clamp(int(stats["phase_per_tick"]), 1, 100000)
-	return 20
-
 func apply_to(species_id: Variant, actor: Actor) -> void:
 	var s := get_id(species_id)
-	var used_human_fallback := false
+	var used_fallback := false
 
 	if s.is_empty():
-		# Fallback to "human" data if available, but swap glyph/color to obvious debug.
 		var human := get_id(&"human")
 		if human.is_empty():
-			push_warning("Species not found and no human fallback: %s" % species_id)
+			push_warning("Species not found and no fallback: %s" % species_id)
 			actor.glyph = "?"
 			actor.fg_color = Color(1, 0, 1)
-			actor.phase_per_tick = 20
+			# Do not touch phase regen here; Actor defaults are authoritative.
+			actor.speed_mult = 1.0
 			return
 		s = human
-		used_human_fallback = true
+		used_fallback = true
 
 	# Visuals
-	actor.glyph    = "?" if used_human_fallback else s["glyph"]
-	actor.fg_color = Color(1, 0, 1) if used_human_fallback else s["fg"]
+	actor.glyph    = "?" if used_fallback else s["glyph"]
+	actor.fg_color = Color(1, 0, 1) if used_fallback else s["fg"]
 
-	# Speed
-	actor.phase_per_tick = get_speed(s["id"])
+	# Time/speed: regen is uniform and owned by Actor. Only baseline multiplier here.
+	actor.speed_mult = 1.0
 
 	# Anatomy (pass-through compiled zones and plan)
 	actor.plan      = s["plan"]
 	actor.plan_map  = s["plan_map"]
 	actor.zone_labels     = s["zone_labels"]
-	actor.zone_coverage   = s["zone_coverage_pct"]   # for hit weights
-	actor.zone_volume     = s["zone_volume_pct"]     # for scaling
+	actor.zone_coverage   = s["zone_coverage_pct"]
+	actor.zone_volume     = s["zone_volume_pct"]
 	actor.zone_organs     = s["zone_organs"]
 	actor.zone_has_artery = s["zone_has_artery"]
 	actor.zone_eff_kind   = s["zone_eff_kind"]
@@ -132,7 +125,6 @@ func _scan_dir(path: String) -> void:
 
 func _compile_species(sres: Species) -> Dictionary:
 	var tags := _dedupe(sres.tags.duplicate())
-	var stats := sres.base_stats.duplicate()
 
 	var plan_map := sres.plan.to_map() if sres.plan != null else {}
 	var zones := _compile_zones(sres.plan) if sres.plan != null else {}
@@ -184,7 +176,7 @@ func _compile_species(sres: Species) -> Dictionary:
 
 	return {
 		"id": sres.id, "name": sres.display_name, "glyph": sres.glyph, "fg": sres.fg,
-		"plan": sres.plan, "plan_map": plan_map, "tags": tags, "stats": stats,
+		"plan": sres.plan, "plan_map": plan_map, "tags": tags, "meta": sres.meta,
 
 		"zones": zones, "zone_labels": zone_labels,
 		"zone_coverage_raw": zone_cov_raw, "zone_volume_raw": zone_vol_raw,
@@ -223,17 +215,17 @@ static func _zone_label(kind: StringName, cls: StringName, token: String, hint: 
 
 static func _compute_terminal(plan: BodyPlan) -> Dictionary:
 	var has_child: Dictionary = {}
-	for p: BodyPart in plan.parts:
+	for p in plan.parts:
 		has_child[p.parent] = true
 	var term: Dictionary = {}
-	for p: BodyPart in plan.parts:
+	for p in plan.parts:
 		term[p.name] = not has_child.has(p.name)
 	return term
 
 static func _compile_zones(plan: BodyPlan) -> Dictionary:
 	var term: Dictionary = _compute_terminal(plan)
 	var zones := {} # id -> dict of props
-	for p: BodyPart in plan.parts:
+	for p in plan.parts:
 		var id: StringName = p.name if (p.slot == &"core" and p.group_id == &"") else p.group_id
 		if id == &"": continue
 		if not zones.has(id):
@@ -249,7 +241,7 @@ static func _compile_zones(plan: BodyPlan) -> Dictionary:
 		z["cov"] = int(z["cov"]) + p.coverage
 		z["vol"] = int(z["vol"]) + p.volume
 		z["artery"] = bool(z["artery"]) or p.has_artery
-		# Gather effectors: prefer terminal’s data when tieing at equal score.
+		# Prefer terminal part when tieing by a hair to break symmetry.
 		if p.effector_kind != &"":
 			var eff: Dictionary = z["effectors"]
 			var prev := float(eff.get(p.effector_kind, 0.0))

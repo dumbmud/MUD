@@ -3,17 +3,13 @@ extends RefCounted
 class_name CommandSource
 ##
 ## Abstract command source for an Actor.
-## SimManager asks each actor’s source for the next command at boundaries.
+## Scheduler asks each source for the next command at boundaries.
 ## Return a Dictionary { "verb": StringName, "args": Dictionary } or null.
 ##
-## Subclasses may:
-##  - buffer “taps” (discrete inputs)
-##  - synthesize “holds” (continuous inputs)
-##  - implement AI decisions
-##
-## Contract:
-##   dequeue(a, sim) is side-effect free on failure (returning null).
-##   It may mutate internal queues when it returns a command.
+## Notes:
+## - No auto-fallbacks here. Idle is allowed.
+## - No per-tick caps; the scheduler may pull multiple commands per tick if phase allows.
+## - Sources may buffer taps and/or synthesize holds.
 
 func dequeue(_a: Actor, _sim: SimManager) -> Variant:
 	return null

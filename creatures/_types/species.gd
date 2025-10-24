@@ -1,6 +1,9 @@
 # res://creatures/_types/species.gd
 extends Resource
 class_name Species
+##
+## Species data stub. No control over phase regen here.
+## Add fields freely; compiled by SpeciesDB.
 
 @export var id: StringName
 @export var display_name: String = ""
@@ -8,8 +11,4 @@ class_name Species
 @export var fg: Color = Color.WHITE
 @export var plan: BodyPlan
 @export var tags: Array[StringName] = []
-
-# Use phase terminology by default. SpeciesDB.get_speed() will also accept legacy "tu_per_tick".
-@export var base_stats := {
-	"phase_per_tick": 20
-}
+@export var meta := {"example": 123}
