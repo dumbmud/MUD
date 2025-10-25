@@ -1,0 +1,589 @@
+[gd_resource type="Resource" script_class="BodyPlan" load_steps=22 format=3 uid="uid://hwiecr1hhbor"]
+
+[ext_resource type="Script" uid="uid://c8r0hd8vrgoq6" path="res://creatures/_types/body_part.gd" id="1_3g6sj"]
+[ext_resource type="Script" uid="uid://cpdewwgbcng2m" path="res://creatures/_types/body_plan.gd" id="2_nknp4"]
+
+[sub_resource type="Resource" id="Resource_ii8if"]
+script = ExtResource("1_3g6sj")
+name = &"head"
+group = &"head"
+coverage_pct = 12
+volume_pct = 8
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 20
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 10
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 70
+}]
+effectors = {
+&"ingestor": 0.6
+}
+sensors = {
+&"hearing": {
+"acuity": 1.0,
+"fov_deg": 360.0,
+"night": 1.0,
+"range": 8.0,
+"tags": []
+},
+&"scent": {
+"acuity": 0.7,
+"fov_deg": 360.0,
+"night": 1.0,
+"range": 6.0,
+"tags": []
+},
+&"sight": {
+"acuity": 1.0,
+"fov_deg": 120.0,
+"night": 0.2,
+"range": 8.0,
+"tags": []
+}
+}
+
+[sub_resource type="Resource" id="Resource_gew14"]
+script = ExtResource("1_3g6sj")
+name = &"torso"
+group = &"torso"
+coverage_pct = 40
+volume_pct = 46
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 15
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 20
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 45
+}, {
+"kind": &"bone",
+"resist": {
+"blunt": 1.8,
+"cut": 1.5,
+"pierce": 2.0
+},
+"rigid": true,
+"thickness_pct": 20
+}]
+
+[sub_resource type="Resource" id="Resource_iourd"]
+script = ExtResource("1_3g6sj")
+name = &"upper_arm.L"
+group = &"arm"
+side = &"L"
+coverage_pct = 4
+volume_pct = 4
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 20
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 15
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 65
+}]
+
+[sub_resource type="Resource" id="Resource_6txum"]
+script = ExtResource("1_3g6sj")
+name = &"lower_arm.L"
+group = &"arm"
+side = &"L"
+coverage_pct = 3
+volume_pct = 3
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 25
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 10
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 65
+}]
+
+[sub_resource type="Resource" id="Resource_66b6o"]
+script = ExtResource("1_3g6sj")
+name = &"hand.L"
+group = &"arm"
+side = &"L"
+coverage_pct = 2
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 30
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 70
+}]
+effectors = {
+&"manipulator": 1.0
+}
+
+[sub_resource type="Resource" id="Resource_kmtb3"]
+script = ExtResource("1_3g6sj")
+name = &"upper_arm.R"
+group = &"arm"
+side = &"R"
+coverage_pct = 4
+volume_pct = 4
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 20
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 15
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 65
+}]
+
+[sub_resource type="Resource" id="Resource_42foh"]
+script = ExtResource("1_3g6sj")
+name = &"lower_arm.R"
+group = &"arm"
+side = &"R"
+coverage_pct = 3
+volume_pct = 3
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 25
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 10
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 65
+}]
+
+[sub_resource type="Resource" id="Resource_1l8ht"]
+script = ExtResource("1_3g6sj")
+name = &"hand.R"
+group = &"arm"
+side = &"R"
+coverage_pct = 2
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 30
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 70
+}]
+effectors = {
+&"manipulator": 1.0
+}
+
+[sub_resource type="Resource" id="Resource_baq8a"]
+script = ExtResource("1_3g6sj")
+name = &"upper_leg.L"
+group = &"leg"
+side = &"L"
+coverage_pct = 7
+volume_pct = 8
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 15
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 20
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 65
+}]
+
+[sub_resource type="Resource" id="Resource_q1h7b"]
+script = ExtResource("1_3g6sj")
+name = &"lower_leg.L"
+group = &"leg"
+side = &"L"
+coverage_pct = 6
+volume_pct = 6
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 20
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 10
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 70
+}]
+
+[sub_resource type="Resource" id="Resource_81b1s"]
+script = ExtResource("1_3g6sj")
+name = &"foot.L"
+group = &"leg"
+side = &"L"
+coverage_pct = 2
+volume_pct = 2
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 30
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 70
+}]
+effectors = {
+&"locomotor": 1.0
+}
+
+[sub_resource type="Resource" id="Resource_1catb"]
+script = ExtResource("1_3g6sj")
+name = &"upper_leg.R"
+group = &"leg"
+side = &"R"
+coverage_pct = 7
+volume_pct = 8
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 15
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 20
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 65
+}]
+
+[sub_resource type="Resource" id="Resource_3dokc"]
+script = ExtResource("1_3g6sj")
+name = &"lower_leg.R"
+group = &"leg"
+side = &"R"
+coverage_pct = 6
+volume_pct = 6
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 20
+}, {
+"kind": &"fat",
+"resist": {
+"blunt": 0.2,
+"cut": 0.3,
+"pierce": 0.5
+},
+"rigid": false,
+"thickness_pct": 10
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 70
+}]
+
+[sub_resource type="Resource" id="Resource_kdgu4"]
+script = ExtResource("1_3g6sj")
+name = &"foot.R"
+group = &"leg"
+side = &"R"
+coverage_pct = 2
+volume_pct = 2
+layers = [{
+"kind": &"skin",
+"resist": {
+"blunt": 0.5,
+"cut": 1.0,
+"pierce": 1.0
+},
+"rigid": false,
+"thickness_pct": 30
+}, {
+"kind": &"muscle",
+"resist": {
+"blunt": 0.6,
+"cut": 0.9,
+"pierce": 0.8
+},
+"rigid": false,
+"thickness_pct": 70
+}]
+effectors = {
+&"locomotor": 1.0
+}
+
+[sub_resource type="Resource" id="Resource_pmnem"]
+script = ExtResource("1_3g6sj")
+name = &"brain"
+slot = &"internal"
+kind = &"vital_core"
+host_zone_id = &"head"
+vital = true
+channels = {
+&"oxygen": {
+"consume": 5.0
+},
+&"sleep": {
+"consume": 1.0
+}
+}
+
+[sub_resource type="Resource" id="Resource_x8gja"]
+script = ExtResource("1_3g6sj")
+name = &"heart"
+slot = &"internal"
+kind = &"pump"
+host_zone_id = &"torso"
+channels = {
+&"oxygen": {
+"gate": 1.0
+}
+}
+
+[sub_resource type="Resource" id="Resource_d7v3p"]
+script = ExtResource("1_3g6sj")
+name = &"lungs"
+slot = &"internal"
+kind = &"gas_exchange"
+host_zone_id = &"torso"
+channels = {
+&"oxygen": {
+"capacity": 100.0,
+"produce": 10.0
+}
+}
+
+[sub_resource type="Resource" id="Resource_ikp42"]
+script = ExtResource("1_3g6sj")
+name = &"guts"
+slot = &"internal"
+kind = &"digestive"
+host_zone_id = &"torso"
+channels = {
+&"hydration": {
+"capacity": 100.0,
+"produce": 1.0
+},
+&"nutrition": {
+"capacity": 100.0,
+"produce": 1.0
+}
+}
+
+[sub_resource type="Resource" id="Resource_qx1rw"]
+script = ExtResource("1_3g6sj")
+name = &"blood_pool"
+slot = &"internal"
+kind = &"storage"
+host_zone_id = &"torso"
+channels = {
+&"fluid": {
+"capacity": 100.0
+}
+}
+
+[resource]
+script = ExtResource("2_nknp4")
+parts = Array[ExtResource("1_3g6sj")]([SubResource("Resource_ii8if"), SubResource("Resource_gew14"), SubResource("Resource_iourd"), SubResource("Resource_6txum"), SubResource("Resource_66b6o"), SubResource("Resource_kmtb3"), SubResource("Resource_42foh"), SubResource("Resource_1l8ht"), SubResource("Resource_baq8a"), SubResource("Resource_q1h7b"), SubResource("Resource_81b1s"), SubResource("Resource_1catb"), SubResource("Resource_3dokc"), SubResource("Resource_kdgu4"), SubResource("Resource_pmnem"), SubResource("Resource_x8gja"), SubResource("Resource_d7v3p"), SubResource("Resource_ikp42"), SubResource("Resource_qx1rw")])

@@ -2,12 +2,12 @@
 class_name Actor
 extends RefCounted
 ##
-## Core runtime actor data. Verbs mutate this; SimManager only schedules.
-## Phase model:
-##   - phase_per_tick is uniform for all species (100).
-##   - speed_mult scales verb *costs* (default 1.0), not regen.
+## Actor v2.1
+## Core runtime actor data for the scheduler and verbs.
+## Species data is compiled by SpeciesDB and copied here via SpeciesDB.apply_to().
+## No time/speed tweaks. No arteries. No legacy fields.
 
-# Identity / pos
+# ── Identity / position ──────────────────────────────────────────────────────
 var actor_id: int
 var grid_pos: Vector2i
 
@@ -17,31 +17,44 @@ var facing: Vector2i = Vector2i(0, 1)
 # Relation to player: -1 hostile, 0 neutral, 1 ally.
 var relation_to_player: int = 0
 
-# Anatomy
-var plan: BodyPlan = null
-var plan_map: Dictionary = {}
+# ── Anatomy source assets ────────────────────────────────────────────────────
+var plan: BodyPlan = null              # BodyPlan asset reference (zones + internal organs)
+var plan_map: Dictionary = {}          # Debug/introspection map from BodyPlan.to_map()
 
-# Zones (compiled by SpeciesDB)
-var zone_labels: Dictionary = {}     # id->string
-var zone_coverage: Dictionary = {}   # id->int (sum 100)
-var zone_volume: Dictionary = {}     # id->int (sum 100)
-var zone_organs: Dictionary = {}     # id->[StringName]
-var zone_has_artery: Dictionary = {} # id->bool
-var zone_eff_kind: Dictionary = {}   # id->"grasper"/"stepper"/"chewer"
-var zone_eff_score: Dictionary = {}  # id->0..1
-var zone_sensors: Dictionary = {}    # id->{vision:0..1}
-var zone_effectors: Dictionary = {}  # id->{&"grasper":f,&"stepper":f,&"chewer":f}
+# ── Zones (compiled) ─────────────────────────────────────────────────────────
+# Keys are zone ids (StringName).
+var zone_labels: Dictionary = {}       # id -> String (UI/debug label)
+var zone_coverage: Dictionary = {}     # id -> int (normalized; species sum = 100)
+var zone_volume: Dictionary = {}       # id -> int (normalized; species sum = 100)
+var zone_layers: Dictionary = {}       # id -> Array[Dictionary] (ordered outer→inner)
+var zone_effectors: Dictionary = {}    # id -> Dictionary[StringName,float] (e.g., locomotor/manipulator/ingestor)
+var zone_sensors: Dictionary = {}      # id -> Dictionary[StringName,Dictionary] (e.g., sight/hearing/scent params)
 
-# Display
+# ── Organs (compiled) ────────────────────────────────────────────────────────
+# organ dict shape: { id, kind, host_zone, vital:bool, channels:Dictionary }
+var organs_by_zone: Dictionary = {}    # zone_id -> Array[organ_id]
+var organs_all: Dictionary = {}        # organ_id -> Dictionary
+var vital_organs: Array[StringName] = []
+
+# ── Targeting (compiled) ─────────────────────────────────────────────────────
+# Canonical coarse labels: head, torso, left_arm, right_arm, left_leg, right_leg, plus species-defined extras.
+var targeting_index: Dictionary = {}   # label -> Array[zone_id]
+
+# ── Instance knobs (compile-through) ─────────────────────────────────────────
+var size_scale: float = 1.0            # 1.0 = human baseline
+var death_policy: Dictionary = {}      # Boolean clauses over organs/channels (data only)
+
+# ── Display ──────────────────────────────────────────────────────────────────
 var glyph: String = ""
 var fg_color: Color = Color.WHITE
 var is_player: bool = false
 
-# Time / speed
+# ── Time / speed (owned by scheduler; unchanged) ─────────────────────────────
 var phase_per_tick: int = 100
 var phase: int = 0
 var speed_mult: float = 1.0
 
+# ── Ctor ─────────────────────────────────────────────────────────────────────
 func _init(_actor_id: int, _grid_pos: Vector2i, _is_player: bool) -> void:
 	actor_id = _actor_id
 	grid_pos = _grid_pos
@@ -49,7 +62,6 @@ func _init(_actor_id: int, _grid_pos: Vector2i, _is_player: bool) -> void:
 	relation_to_player = 1 if _is_player else -1
 
 # ── Facing helpers ───────────────────────────────────────────────────────────
-
 func set_facing(dir: Vector2i) -> void:
 	var d := dir
 	if d.x != 0: d.x = sign(d.x)
