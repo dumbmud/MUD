@@ -128,7 +128,7 @@ func _hold_sampler_impl() -> Array[Dictionary]:
 
 	# Held waits
 	if Input.is_action_pressed("wait_drain"):
-		out.append({"verb": &"Wait", "args": {"ticks": 1}})
+		out.append({"verb": &"Wait", "args": {"ticks": 0}})
 	if Input.is_action_pressed("wait_5"):
 		out.append({"verb": &"Wait", "args": {"ticks": 5}})
 

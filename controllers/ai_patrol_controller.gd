@@ -19,4 +19,4 @@ func dequeue(a: Actor, sim: SimManager) -> Variant:
 		return cmd
 	# Blocked: flip and yield this tick to avoid thrashing in rounds.
 	_dir = -_dir
-	return {"verb": &"Wait", "args": {"ticks": 1}}
+	return {"verb": &"Wait", "args": {"ticks": 0}}

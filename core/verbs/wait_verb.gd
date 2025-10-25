@@ -1,25 +1,23 @@
-# res://core/verbs/wait_verb.gd
 extends Verb
 class_name WaitVerb
 ##
 ## Do nothing and spend phase.
 ## Semantics:
-##   - Wait(0): drain the *current* tick’s remaining phase budget (no carry).
-##              Requires a.phase > 0 or it won’t start.
-##   - Wait(k>=1): wait exactly k full ticks of game time
-##                 (cost = k * a.phase_per_tick). May span ticks.
+##   - Wait(0): if a.phase > 0, drain the current tick’s remaining phase;
+##              if a.phase == 0, consume one full tick on the next tick.
+##   - Wait(k>=1): wait exactly k full ticks (cost = k * a.phase_per_tick).
 ## No scheduler special-casing.
 
-func can_start(a: Actor, args: Dictionary, _sim: SimManager) -> bool:
-	var ticks: int = int(args.get("ticks", 0))
-	if ticks <= 0:
-		return a.phase > 0        # cannot start if no budget to drain
+func can_start(_a: Actor, args: Dictionary, _sim: SimManager) -> bool:
+	# Allow starting regardless of current phase to avoid driver coupling.
+	var _ticks: int = int(args.get("ticks", 0))
 	return true
 
 func phase_cost(a: Actor, args: Dictionary, _sim: SimManager) -> int:
 	var ticks: int = int(args.get("ticks", 0))
 	if ticks <= 0:
-		return int(a.phase)       # drain remaining budget this tick
+		# Drain-now if budget remains; otherwise defer by one full tick.
+		return int(a.phase) if a.phase > 0 else int(a.phase_per_tick)
 	return int(a.phase_per_tick) * max(1, ticks)
 
 func apply(_a: Actor, _args: Dictionary, _sim: SimManager) -> bool:
