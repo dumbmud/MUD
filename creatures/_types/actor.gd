@@ -2,7 +2,7 @@
 class_name Actor
 extends RefCounted
 ##
-## Actor v2.1
+## Actor
 ## Core runtime actor data for the scheduler and verbs.
 ## Species data is compiled by SpeciesDB and copied here via SpeciesDB.apply_to().
 ## No time/speed tweaks. No arteries. No legacy fields.
@@ -49,8 +49,8 @@ var glyph: String = ""
 var fg_color: Color = Color.WHITE
 var is_player: bool = false
 
-# ── Time / speed (owned by scheduler; unchanged) ─────────────────────────────
-var phase_per_tick: int = 100
+# ── Time / speed ─────────────────────────────────────────────────────────────
+# Per-tick budget is a global constant (100). Actors track only current phase.
 var phase: int = 0
 var speed_mult: float = 1.0
 

@@ -19,12 +19,12 @@ func set_debug(
 	vis_h: int,
 	mode_label: String,
 	phase: int,
-	phase_per_tick: int,
+	per_tick: int,
 	in_tick: bool,
 	actor_count: int
 ) -> void:
 	lbl_tick.text = "Tick: %d   Mode: %s" % [tick, mode_label]
-	lbl_db0.text = "Pos: (%d,%d)   Phase: %d / %d" % [pos.x, pos.y, phase, phase_per_tick]
+	lbl_db0.text = "Pos: (%d,%d)   Phase: %d / %d" % [pos.x, pos.y, phase, per_tick]
 	lbl_db1.text = "Zoom: %.2f   View: %dx%d cells" % [zoom, vis_w, vis_h]
 	lbl_db2.text = "Actors: %d   InTick: %s" % [actor_count, str(in_tick)]
 	lbl_db3.text = ""

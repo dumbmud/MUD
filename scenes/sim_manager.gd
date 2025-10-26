@@ -4,7 +4,7 @@ class_name SimManager
 ##
 ## Pure scheduler.
 ## - No knowledge of TB/RT or “player”.
-## - Time unit = tick; per-tick budget = Actor.phase_per_tick (uniform, default 100).
+## - Time unit = tick; per-tick budget = 100 phase (1 phase = 1 ms, 100 ms/tick).
 ## - Actions are activities: remaining phase is spent across rounds; commit at 0.
 ## - Public stepping:
 ##     * step_tick(): advance one full tick (begin → rounds until quiet → end).
@@ -12,6 +12,7 @@ class_name SimManager
 ##         stop early as soon as `stop_on_actor_id` commits. Returns:
 ##         { "spent": bool, "stopped_on_target": bool }.
 ##     * end_tick_if_quiet(): finalize the current tick if nobody can spend more.
+const PHASE_PER_TICK := 100
 
 signal tick_advanced(tick: int)
 signal state_changed()
@@ -122,7 +123,7 @@ func _begin_tick_if_needed() -> void:
 	in_tick = true
 	# Reset per-tick budgets
 	for a in actors:
-		a.phase = a.phase_per_tick
+		a.phase = PHASE_PER_TICK
 	# Stable order: ascending actor_id
 	actors.sort_custom(func(x, y): return x.actor_id < y.actor_id)
 

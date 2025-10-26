@@ -16,7 +16,7 @@ class_name SimView
 @onready var hud: UIOverlay    = $UI/HUD
 
 var zoom_levels: Array[float] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0]
-var zoom_index := 9
+var zoom_index := 10
 var visible_w := 0
 var visible_h := 0
 const CELL_PX := 26
@@ -105,7 +105,7 @@ func _update_hud() -> void:
 		visible_h,
 		mode_label,
 		a.phase,
-		a.phase_per_tick,
+		SimManager.PHASE_PER_TICK,
 		sim.in_tick,
 		sim.actors.size()
 	)
