@@ -16,6 +16,7 @@ enum Mode { GAMEPLAY, UI_MENU, TEXT }
 
 var _mode_stack: Array[int] = [Mode.GAMEPLAY]
 var _player_controller: Variant = null   # expects push(Dictionary) and set_hold_sampler(Callable)
+var _desired_gait: int = 1  # 0..3
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Public API
@@ -57,28 +58,28 @@ func _input(event: InputEvent) -> void:
 
 	# Movement taps
 	if event.is_action_pressed("move_up"):
-		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(0, -1)}})
+		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(0,-1), "gait": _desired_gait}})
 		kicked = true
 	elif event.is_action_pressed("move_down"):
-		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(0, 1)}})
+		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(0, 1), "gait": _desired_gait}})
 		kicked = true
 	elif event.is_action_pressed("move_left"):
-		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(-1, 0)}})
+		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(-1, 0), "gait": _desired_gait}})
 		kicked = true
 	elif event.is_action_pressed("move_right"):
-		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(1, 0)}})
+		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(1, 0), "gait": _desired_gait}})
 		kicked = true
 	elif event.is_action_pressed("move_upleft"):
-		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(-1, -1)}})
+		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(-1, -1), "gait": _desired_gait}})
 		kicked = true
 	elif event.is_action_pressed("move_upright"):
-		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(1, -1)}})
+		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(1, -1), "gait": _desired_gait}})
 		kicked = true
 	elif event.is_action_pressed("move_downleft"):
-		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(-1, 1)}})
+		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(-1, 1), "gait": _desired_gait}})
 		kicked = true
 	elif event.is_action_pressed("move_downright"):
-		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(1, 1)}})
+		_player_controller.push({"verb": &"Move", "args": {"dir": Vector2i(1, 1), "gait": _desired_gait}})
 		kicked = true
 
 	# Wait taps
@@ -87,6 +88,11 @@ func _input(event: InputEvent) -> void:
 		kicked = true
 	if event.is_action_pressed("wait_5"):
 		_player_controller.push({"verb": &"Wait", "args": {"ticks": 5}})
+		kicked = true
+	
+	# gait cycle
+	if event.is_action_pressed("gait_cycle"):
+		_desired_gait = (_desired_gait + 1) % 4
 		kicked = true
 
 	# In TB, kick one step per tap. In RT, GameLoop ignores kicks.
@@ -131,5 +137,8 @@ func _hold_sampler_impl() -> Array[Dictionary]:
 		out.append({"verb": &"Wait", "args": {"ticks": 0}})
 	if Input.is_action_pressed("wait_5"):
 		out.append({"verb": &"Wait", "args": {"ticks": 5}})
+	
+	if v != Vector2i.ZERO:
+		out.append({"verb": &"Move", "args": {"dir": v, "gait": _desired_gait}})
 
 	return out

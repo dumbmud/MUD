@@ -30,7 +30,8 @@ func can_start(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 
 func phase_cost(a: Actor, args: Dictionary, _sim: SimManager) -> int:
 	var d: Vector2i = args.get("dir", Vector2i.ZERO)
-	var seconds := Physio.step_seconds(a, d)
+	var g_hint := int(args.get("gait", -1))
+	var seconds := Physio.step_seconds(a, d, g_hint)
 	return max(1, int(round(seconds * 1000.0)))
 
 func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
@@ -47,8 +48,8 @@ func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	a.grid_pos = t
 
 	# Apply time-based stamina drain for movement.
-	var seconds := Physio.step_seconds(a, d)
+	var g_hint := int(args.get("gait", -1))
+	var seconds := Physio.step_seconds(a, d, g_hint)
 	var delta := Physio.stamina_delta_on_move(a, seconds)
 	a.stamina = clampf(a.stamina + delta, 0.0, a.stamina_max)
-
 	return true
