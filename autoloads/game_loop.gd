@@ -27,7 +27,7 @@ var _tb_running: bool = false
 func _ready() -> void:
 	set_process(true)
 
-# ── wiring ───────────────────────────────────────────────────────────────────
+# ── wiring ────────────────────────────────────────────────────────────────────
 
 func register_sim(sim: SimManager) -> void:
 	_sim = sim
@@ -36,7 +36,7 @@ func register_player(pc: PlayerController) -> void:
 	_player_controller = pc
 	_apply_policy()
 
-# ── mode control ─────────────────────────────────────────────────────────────
+# ── mode control ──────────────────────────────────────────────────────────────
 
 func set_real_time(on: bool) -> void:
 	real_time = on
@@ -47,7 +47,7 @@ func set_real_time(on: bool) -> void:
 func toggle_real_time() -> void:
 	set_real_time(!real_time)
 
-# ── TB kick ──────────────────────────────────────────────────────────────────
+# ── TB kick ───────────────────────────────────────────────────────────────────
 
 func kick() -> void:
 	# TB only: start a run if the player has a valid command prefetched.
@@ -57,7 +57,7 @@ func kick() -> void:
 		_accum = 0.0
 		_tb_running = true
 
-# ── frame pump ───────────────────────────────────────────────────────────────
+# ── frame pump ────────────────────────────────────────────────────────────────
 
 func _process(dt: float) -> void:
 	if _sim == null:
@@ -107,7 +107,7 @@ func _process(dt: float) -> void:
 	elif slices == max_catchup_per_frame:
 		_accum = 0.0  # back-pressure
 
-# ── policy ───────────────────────────────────────────────────────────────────
+# ── policy ────────────────────────────────────────────────────────────────────
 
 func _apply_policy() -> void:
 	if _player_controller != null:

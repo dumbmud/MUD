@@ -6,19 +6,19 @@ class_name BodyPart
 ## One resource type used for both targetable ZONES and INTERNAL organs.
 ## Clean schema. No arteries. No legacy fields.
 
-# ── Identity / hierarchy (optional) ──────────────────────────────────────────
+# ── Identity / hierarchy (optional) ───────────────────────────────────────────
 
 @export var name: StringName                      # Unique id within a BodyPlan
 @export var parent: StringName = &""              # Optional logical parent for tools/visualization
 
-# ── Role selector ────────────────────────────────────────────────────────────
+# ── Role selector ─────────────────────────────────────────────────────────────
 # slot decides which field set is relevant.
 # - "zone": targetable body region shown in VATS-style UI.
 # - "internal": non-targetable organ hosted inside a zone; only hittable if the zone is pierced.
 
 @export var slot: StringName = &"zone"            # &"zone" | &"internal"
 
-# ── ZONE FIELDS (when slot == "zone") ────────────────────────────────────────
+# ── ZONE FIELDS (when slot == "zone") ─────────────────────────────────────────
 # Coarse targeting groups match UI buckets. Side is L/R/C.
 # Coverage/Volume are normalized per species to sum 100%.
 
@@ -55,7 +55,7 @@ class_name BodyPart
 # { "range": float, "fov_deg": float, "acuity": float, "night": float, "tags": Array[StringName] }
 @export var sensors: Dictionary = {}              # Dictionary[StringName, Dictionary]
 
-# ── ORGAN FIELDS (when slot == "internal") ───────────────────────────────────
+# ── ORGAN FIELDS (when slot == "internal") ────────────────────────────────────
 # Functional internals hosted inside a zone. Not directly targetable.
 
 @export var kind: StringName = &""                # &"vital_core"|&"pump"|&"gas_exchange"|&"digestive"|&"filter"|&"storage"|&"support"
@@ -73,7 +73,7 @@ class_name BodyPart
 #   { "fluid":  { "capacity": 100.0 } }
 @export var channels: Dictionary = {}             # Dictionary[StringName, Dictionary]
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# ── Helpers ───────────────────────────────────────────────────────────────────
 
 func is_zone() -> bool:
 	return slot == &"zone"

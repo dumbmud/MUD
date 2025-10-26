@@ -104,9 +104,7 @@ func _draw() -> void:
 					fg
 				)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Facing overlay: thin border segment
-# ─────────────────────────────────────────────────────────────────────────────
+# Facing overlay: thin border segment ──────────────────────────────────────────
 
 func _rel_color(rel: int) -> Color:
 	if rel < 0:   return Color(1, 0, 0)   # hostile: red
@@ -178,9 +176,7 @@ func _draw_facing_border(origin: Vector2, dir: Vector2i, rel: int) -> void:
 			draw_line(Vector2(x - half, y), Vector2(x + corner_len, y), c, thick)
 			draw_line(Vector2(x, y - half), Vector2(x, y + corner_len), c, thick)
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Safe default resolver
-# ─────────────────────────────────────────────────────────────────────────────
+# Safe default resolver ────────────────────────────────────────────────────────
 
 func _blank_cell(_p: Vector2i) -> String:
 	return " "

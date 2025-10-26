@@ -8,7 +8,7 @@ class_name BodyPlan
 
 @export var parts: Array[BodyPart] = []
 
-# ── Queries ──────────────────────────────────────────────────────────────────
+# ── Queries ───────────────────────────────────────────────────────────────────
 
 func zones() -> Array[BodyPart]:
 	# Returns BodyParts with slot=="zone".
@@ -40,7 +40,7 @@ func get_internal_ids() -> Array[StringName]:
 			out.append(p.name)
 	return out
 
-# ── Debug/Introspection map ──────────────────────────────────────────────────
+# ── Debug/Introspection map ───────────────────────────────────────────────────
 # Used by SpeciesDB to stash a baked, human-readable mirror on Actor.plan_map.
 # Keys and shapes match BodyPart v2.1. No behavior inferred from this.
 
