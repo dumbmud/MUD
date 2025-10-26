@@ -4,15 +4,13 @@ class_name MoveVerb
 ##
 ## Move one tile if passable and unoccupied.
 ## Corner rule: diagonal allowed unless both adjacent orthogonals are blocked.
-## Uses Physio for distance→seconds and stamina math.
-##   - 1 phase = 1 ms; phase cost = round(Physio.step_seconds * 1000).
-##   - stamina deltas computed via Physio but not yet applied.
+## Cost is elapsed time: 1 phase = 1 ms. Uses Physio for seconds.
 
 static func _move_blocked(sim: SimManager, from: Vector2i, dir: Vector2i, target: Vector2i) -> bool:
 	var world := sim.world
 	if world == null: return true
 	if !world.is_passable(target): return true
-	# Diagonal squeeze check: forbid only when both orthogonals are impassable.
+	# Diagonal squeeze: forbid only when both orthogonals are impassable.
 	if abs(dir.x) + abs(dir.y) == 2:
 		var side_a := Vector2i(from.x + dir.x, from.y)
 		var side_b := Vector2i(from.x, from.y + dir.y)
@@ -42,10 +40,15 @@ func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	var t := a.grid_pos + d
 	if _move_blocked(sim, a.grid_pos, d, t): return false
 	if GridOccupancy.has_pos(t): return false
+
 	a.set_facing(d)
-	if !GridOccupancy.move(a.actor_id, t): return false
+	if !GridOccupancy.move(a.actor_id, t):
+		return false
 	a.grid_pos = t
-	# Stamina accounting placeholder (value not applied yet).
-	# Leave stamina accounting for a later commit (no state writes now)
-	# var _unused := Physio.stamina_delta_on_move(a, Physio.step_seconds(a, d))
+
+	# Apply time-based stamina drain for movement.
+	var seconds := Physio.step_seconds(a, d)
+	var delta := Physio.stamina_delta_on_move(a, seconds)
+	a.stamina = clampf(a.stamina + delta, 0.0, a.stamina_max)
+
 	return true
