@@ -53,7 +53,7 @@ func apply_to(species_id: Variant, actor: Actor) -> void:
 	actor.fg_color = Color(1, 0, 1) if used_fallback else s["fg"]
 
 	# Time/speed owned by Actor; baseline multiplier only.
-	actor.speed_mult = 1.0
+	# actor.speed_mult = 1.0
 
 	# Anatomy (compiled)
 	actor.plan             = s["plan"]

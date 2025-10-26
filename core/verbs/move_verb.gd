@@ -4,20 +4,9 @@ class_name MoveVerb
 ##
 ## Move one tile if passable and unoccupied.
 ## Corner rule: diagonal allowed unless both adjacent orthogonals are blocked.
-## Distance model:
-##   - 1 tile = 1.0 m
-##   - Diagonal step = √2 m
-## Time model:
-##   - 1 phase = 1 ms, 100 phase per tick.
-##   - Baseline travel rate = 500 ms per meter at speed_mult = 1.0
-##     (so cardinal ≈500 ms, diagonal ≈707 ms).
-## Variability comes from actor.speed_mult (≥0).
-
-const MS_PER_M := 500.0
-
-static func _distance_m(d: Vector2i) -> float:
-	# Unit step lengths in meters.
-	return 1.41421356237 if (abs(d.x) + abs(d.y) == 2) else 1.0
+## Uses Physio for distance→seconds and stamina math.
+##   - 1 phase = 1 ms; phase cost = round(Physio.step_seconds * 1000).
+##   - stamina deltas computed via Physio but not yet applied.
 
 static func _move_blocked(sim: SimManager, from: Vector2i, dir: Vector2i, target: Vector2i) -> bool:
 	var world := sim.world
@@ -43,12 +32,8 @@ func can_start(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 
 func phase_cost(a: Actor, args: Dictionary, _sim: SimManager) -> int:
 	var d: Vector2i = args.get("dir", Vector2i.ZERO)
-	if d.x != 0: d.x = sign(d.x)
-	if d.y != 0: d.y = sign(d.y)
-	var dist_m := _distance_m(d)
-	var speed_mult: float = max(0.0, float(a.speed_mult))
-	var ms := dist_m * MS_PER_M * speed_mult
-	return max(1, int(round(ms)))
+	var seconds := Physio.step_seconds(a, d)
+	return max(1, int(round(seconds * 1000.0)))
 
 func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	var d: Vector2i = args.get("dir", Vector2i.ZERO)
@@ -60,4 +45,7 @@ func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	a.set_facing(d)
 	if !GridOccupancy.move(a.actor_id, t): return false
 	a.grid_pos = t
+	# Stamina accounting placeholder (value not applied yet).
+	# Leave stamina accounting for a later commit (no state writes now)
+	# var _unused := Physio.stamina_delta_on_move(a, Physio.step_seconds(a, d))
 	return true

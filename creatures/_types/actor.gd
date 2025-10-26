@@ -52,7 +52,6 @@ var is_player: bool = false
 # ── Time / speed ─────────────────────────────────────────────────────────────
 # Per-tick budget is a global constant (100). Actors track only current phase.
 var phase: int = 0
-var speed_mult: float = 1.0
 
 # ── Ctor ─────────────────────────────────────────────────────────────────────
 func _init(_actor_id: int, _grid_pos: Vector2i, _is_player: bool) -> void:
