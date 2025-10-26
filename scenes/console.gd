@@ -11,9 +11,9 @@ extends Node2D
 ## - If unset, a safe blank resolver is used.
 
 @export var font: FontFile
-@export var font_size := 64
+@export var font_size := 26
 
-var cell_px := 64
+var cell_px := 26
 var view_cols := 0
 var view_rows := 0
 var grid_cols := 0

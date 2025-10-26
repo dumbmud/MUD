@@ -15,11 +15,11 @@ class_name SimView
 @onready var console: Console  = $Console
 @onready var hud: UIOverlay    = $UI/HUD
 
-var zoom_levels: Array[float] = [0.1, 0.5, 1.0, 2.0, 3.0, 4.0]
-var zoom_index := 2
+var zoom_levels: Array[float] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0]
+var zoom_index := 9
 var visible_w := 0
 var visible_h := 0
-const CELL_PX := 64
+const CELL_PX := 26
 const GRID_W := 481
 const GRID_H := 271
 
