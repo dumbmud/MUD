@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dvxo4vjigbnik"]
 
-[ext_resource type="Script" uid="uid://comvl2xwquys8" path="res://scenes/game_boot.gd" id="1_cpr0p"]
+[ext_resource type="Script" path="res://scenes/game_boot.gd" id="1_cpr0p"]
 [ext_resource type="PackedScene" uid="uid://btkvpjk4dhnnt" path="res://scenes/SimView.tscn" id="1_qbsmt"]
 [ext_resource type="PackedScene" uid="uid://dwy4dlk8kjtnp" path="res://scenes/SimCore.tscn" id="2_cpr0p"]
 

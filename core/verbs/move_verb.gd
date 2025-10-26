@@ -4,16 +4,20 @@ class_name MoveVerb
 ##
 ## Move one tile if passable and unoccupied.
 ## Corner rule: diagonal allowed unless both adjacent orthogonals are blocked.
-## Phase model: base costs for a 100-per-tick budget.
-##   - Cardinal: 500 (≈5 ticks)
-##   - Diagonal: 707 (≈7.07 ticks)
-## Variability comes from actor.speed_mult (≥0). Regen is uniform for all species.
+## Distance model:
+##   - 1 tile = 1.0 m
+##   - Diagonal step = √2 m
+## Time model:
+##   - 1 phase = 1 ms, 100 phase per tick.
+##   - Baseline travel rate = 500 ms per meter at speed_mult = 1.0
+##     (so cardinal ≈500 ms, diagonal ≈707 ms).
+## Variability comes from actor.speed_mult (≥0).
 
-const COST_CARDINAL := 500
-const COST_DIAGONAL := 707
+const MS_PER_M := 500.0
 
-static func _cost_for_dir(d: Vector2i) -> int:
-	return COST_DIAGONAL if (abs(d.x) + abs(d.y) == 2) else COST_CARDINAL
+static func _distance_m(d: Vector2i) -> float:
+	# Unit step lengths in meters.
+	return 1.41421356237 if (abs(d.x) + abs(d.y) == 2) else 1.0
 
 static func _move_blocked(sim: SimManager, from: Vector2i, dir: Vector2i, target: Vector2i) -> bool:
 	var world := sim.world
@@ -39,9 +43,12 @@ func can_start(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 
 func phase_cost(a: Actor, args: Dictionary, _sim: SimManager) -> int:
 	var d: Vector2i = args.get("dir", Vector2i.ZERO)
-	var base := _cost_for_dir(d)
-	var speed_mult : float = max(0.0, float(a.speed_mult))
-	return max(1, int(round(base * speed_mult)))
+	if d.x != 0: d.x = sign(d.x)
+	if d.y != 0: d.y = sign(d.y)
+	var dist_m := _distance_m(d)
+	var speed_mult: float = max(0.0, float(a.speed_mult))
+	var ms := dist_m * MS_PER_M * speed_mult
+	return max(1, int(round(ms)))
 
 func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	var d: Vector2i = args.get("dir", Vector2i.ZERO)
