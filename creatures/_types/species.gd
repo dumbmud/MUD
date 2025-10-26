@@ -6,25 +6,26 @@ class_name Species
 ## Minimal species asset for body compilation.
 ## Pure data. No time/speed. No legacy fields.
 
-# ── Identity / visuals ───────────────────────────────────────────────────────
+# Identity / visuals ───────────────────────────────────────────────────────────
 
 @export var id: StringName                      # Unique species id (e.g., &"human")
 @export var display_name: String = ""           # UI name
 @export var glyph: String = "@"                 # Single-character glyph
 @export var fg: Color = Color.WHITE             # Glyph color
 
-# ── Anatomy ──────────────────────────────────────────────────────────────────
+# Anatomy ──────────────────────────────────────────────────────────────────────
 
 @export var plan: BodyPlan                      # BodyPlan with ZONES and INTERNAL organs
 
-# ── Tags ─────────────────────────────────────────────────────────────────────
+# Tags ─────────────────────────────────────────────────────────────────────────
 
 @export var tags: Array[StringName] = []        # e.g., [&"debug"]
 
-# ── Instance knobs (compile-through only) ────────────────────────────────────
+# Instance knobs (compile-through only) ────────────────────────────────────────
 
 @export var size_scale: float = 1.0             # 1.0 = human baseline. All mass/capacity derive.
 @export var death_policy: Dictionary = {}       # Boolean clauses over organs/channels. Passed through.
+@export var body_mass_kg: float = 70.0          # baseline adult human-equivalent
 
 # Example death_policy schema (data-only, not enforced here):
 # {

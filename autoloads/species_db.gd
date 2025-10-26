@@ -8,14 +8,14 @@ extends Node
 
 const SPECIES_DIR := "res://bodies/species"  # content root for Species *.tres
 
-# ── Compiled caches ──────────────────────────────────────────────────────────
+# Compiled caches ──────────────────────────────────────────────────────────────
 var by_id: Dictionary = {}   # Dictionary[StringName, Dictionary]
 var by_tag: Dictionary = {}  # Dictionary[StringName, Array[StringName]]
 
 func _ready() -> void:
 	_build_index(SPECIES_DIR)
 
-# ── Public API ────────────────────────────────────────────────────────────────
+# Public API ───────────────────────────────────────────────────────────────────
 
 func get_id(id_in: Variant) -> Dictionary:
 	# Returns compiled species dict or empty dict.
@@ -54,7 +54,11 @@ func apply_to(species_id: Variant, actor: Actor) -> void:
 
 	# Time/speed owned by Actor; baseline multiplier only.
 	# actor.speed_mult = 1.0
-
+	
+	actor.size_scale = float(s.get("size_scale", 1.0))
+	actor.death_policy = s.get("death_policy", {})
+	actor.mass_kg = float(s.get("body_mass_kg", 70.0)) * actor.size_scale
+	
 	# Anatomy (compiled)
 	actor.plan             = s["plan"]
 	actor.plan_map         = s["plan_map"]
@@ -71,7 +75,7 @@ func apply_to(species_id: Variant, actor: Actor) -> void:
 	actor.size_scale       = float(s.get("size_scale", 1.0))
 	actor.death_policy     = s.get("death_policy", {})
 
-# ── Build / index ────────────────────────────────────────────────────────────
+# Build / index ────────────────────────────────────────────────────────────────
 
 func _build_index(root: String) -> void:
 	by_id.clear()
@@ -100,12 +104,12 @@ func _scan_dir(path: String) -> void:
 		return
 	d.list_dir_begin()
 	while true:
-		var name := d.get_next()
-		if name == "":
+		var name_ := d.get_next()
+		if name_ == "":
 			break
-		if name.begins_with("_"):
+		if name_.begins_with("_"):
 			continue
-		var full := path.path_join(name)
+		var full := path.path_join(name_)
 		if d.current_is_dir():
 			_scan_dir(full)
 		elif full.get_extension() in ["tres", "res"]:
@@ -118,7 +122,7 @@ func _scan_dir(path: String) -> void:
 					(by_tag[t] as Array).append(compiled["id"])
 	d.list_dir_end()
 
-# ── Compile Species resource → baked dict ────────────────────────────────────
+# Compile Species resource -> baked dict ────────────────────────────────────────
 
 func _compile_species(sres: Species) -> Dictionary:
 	var tags := _dedupe(sres.tags.duplicate())
@@ -232,10 +236,11 @@ func _compile_species(sres: Species) -> Dictionary:
 
 		# Instance knobs
 		"size_scale": float(sres.size_scale if "size_scale" in sres else 1.0),
-		"death_policy": sres.death_policy if "death_policy" in sres else {}
+		"death_policy": sres.death_policy if "death_policy" in sres else {},
+		"body_mass_kg": float(sres.body_mass_kg if "body_mass_kg" in sres else 70.0)
 	}
 
-# ── Helpers ──────────────────────────────────────────────────────────────────
+# Helpers ──────────────────────────────────────────────────────────────────────
 
 static func _dedupe(arr: Array) -> Array:
 	var seen := {}
