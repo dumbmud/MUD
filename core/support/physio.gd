@@ -24,13 +24,14 @@ const ASYM_K := 0.25               # strength of asymmetry penalty
 const ASYM_MIN := 0.70             # floor for asymmetry factor
 const EFFORT_MIN_CAP := 0.25       # avoid infinite effort when capacity≈0
 
+# balanced around human
 static func gait_base_speed(gait: int) -> float:
 	match gait:
-		GAIT_SNEAK:  return 1.0
-		GAIT_WALK:   return 2.0
-		GAIT_JOG:    return 3.5
-		GAIT_SPRINT: return 5.0
-		_:           return 2.0
+		GAIT_SNEAK:  return 0.70 #~1.57mph
+		GAIT_WALK:   return 1.50 #~3.36mph
+		GAIT_JOG:    return 3.00 #~6.71mph
+		GAIT_SPRINT: return 6.00 #~13.42mph
+		_:           return 1.50
 
 # ── Capacity helpers ─────────────────────────────────────────────────────────
 static func _sum_locomotor_all(actor: Actor) -> float:
