@@ -64,6 +64,7 @@ func _draw() -> void:
 
 	for sy in range(view_rows):
 		var y_px := _view_origin_px.y + sy * cell_h_px
+		var span_run := 0
 		for sx in range(view_cols):
 			var x_px := _view_origin_px.x + sx * cell_w_px
 			var wx := _player.x + (sx - _view_center.x)
@@ -90,24 +91,35 @@ func _draw() -> void:
 				if cell.size() > 1: fg = cell[1]
 				if cell.size() > 2: bg = cell[2]
 
-			# draw background per cell
-			draw_rect(Rect2(Vector2(x_px, y_px), Vector2(cell_w_px, cell_h_px)), bg, true)
+			# per-cell span (wide glyphs)
+			var span := 1
+			if cell is Dictionary:
+				span = int(cell.get("span", 1))
+
+			# draw background; if starting a span, paint once across the span
+			if span_run <= 0:
+				var w : int = max(1, span) * cell_w_px
+				draw_rect(Rect2(Vector2(x_px, y_px), Vector2(w, cell_h_px)), bg, true)
+			# else: skip BG; it was painted by the span head
 
 			# draw facing overlay if provided
 			if facing != Vector2i.ZERO:
 				_draw_facing_border(Vector2(x_px, y_px), facing, rel)
 
 			# draw one foreground glyph if any
-			if ch != "" and ch != " ":
+			if ch != "" and ch != " " and span_run <= 0:
 				draw_string(
 					font,
 					Vector2(x_px, y_px + _baseline),
 					ch,
 					HORIZONTAL_ALIGNMENT_CENTER,
-					cell_w_px,
+					max(1, span) * cell_w_px,
 					font_size,
 					fg
 				)
+				span_run = max(0, span - 1)
+			else:
+				span_run = max(0, span_run - 1)
 
 # Facing overlay: thin border segment ──────────────────────────────────────────
 # TODO now that console is multi-purpose, this feels weird to have in here.

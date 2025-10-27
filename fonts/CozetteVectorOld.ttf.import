@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://d3mavtwa0qug6"
-path="res://.godot/imported/CozetteVector.ttf-5de00d7b94ee40bf1ac04854b07f362d.fontdata"
+uid="uid://u16op2k0ppkl"
+path="res://.godot/imported/CozetteVectorOld.ttf-017e97825bcb993e93650fcb4e4560eb.fontdata"
 
 [deps]
 
-source_file="res://fonts/CozetteVector.ttf"
-dest_files=["res://.godot/imported/CozetteVector.ttf-5de00d7b94ee40bf1ac04854b07f362d.fontdata"]
+source_file="res://fonts/CozetteVectorOld.ttf"
+dest_files=["res://.godot/imported/CozetteVectorOld.ttf-017e97825bcb993e93650fcb4e4560eb.fontdata"]
 
 [params]
 

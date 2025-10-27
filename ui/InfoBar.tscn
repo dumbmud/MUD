@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://grqlbxiiln78" path="res://ui/infobar.gd" id="1_75to4"]
 [ext_resource type="Script" uid="uid://b5vvvhsvdliem" path="res://scenes/console.gd" id="1_f7xww"]
-[ext_resource type="FontFile" uid="uid://brxs8mj8h2fj1" path="res://fonts/CozetteVector.ttf" id="3_75s37"]
+[ext_resource type="FontFile" uid="uid://d3mavtwa0qug6" path="res://fonts/CozetteVector.ttf" id="3_75s37"]
 
 [node name="InfoBar" type="Node2D"]
 script = ExtResource("1_75to4")

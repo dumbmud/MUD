@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://b458laagpcxke" path="res://scenes/sim_view.gd" id="1_i2epp"]
 [ext_resource type="Script" uid="uid://b5vvvhsvdliem" path="res://scenes/console.gd" id="1_yu701"]
 [ext_resource type="Script" uid="uid://y468lwthrfm6" path="res://scenes/ui_overlay.gd" id="3_7w7l6"]
-[ext_resource type="FontFile" uid="uid://brxs8mj8h2fj1" path="res://fonts/CozetteVector.ttf" id="3_i2epp"]
+[ext_resource type="FontFile" uid="uid://d3mavtwa0qug6" path="res://fonts/CozetteVector.ttf" id="3_i2epp"]
 [ext_resource type="PackedScene" uid="uid://b6bmp06cxegbg" path="res://ui/WindowManager.tscn" id="5_7w7l6"]
 [ext_resource type="PackedScene" uid="uid://bvki1oxvic2vb" path="res://ui/InfoBar.tscn" id="6_i58bf"]
 

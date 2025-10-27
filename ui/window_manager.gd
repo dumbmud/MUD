@@ -15,6 +15,20 @@ func bind(sim: SimManager, bus: Node, tracked_actor_id: int) -> void:
 	_sim = sim
 	_bus = bus
 	_tracked_id = tracked_actor_id
+	_prewarm_log_panel()
+
+func _prewarm_log_panel() -> void:
+	if _panels.has(&"log_console"):
+		return
+	var s := load("res://ui/panels/LogPanel.tscn")
+	if s == null:
+		push_warning("LogPanel scene missing")
+		return
+	var node: CanvasItem = (s as PackedScene).instantiate()
+	register_panel(&"log_console", node)
+	if node.has_method("bind"):
+		node.call("bind", _bus)
+	node.visible = false   # keep hidden until first open
 
 func open(id: StringName) -> void:
 	if _panels.has(id):
