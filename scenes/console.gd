@@ -28,6 +28,14 @@ var _view_origin_px := Vector2i.ZERO
 
 var _get_cell: Callable = Callable(self, "_blank_cell")   # safe default
 
+# span helpers (explicit only) ─────────────────────────────────────────────────
+func _span_for_cell(cell: Variant) -> int:
+	# Only honor explicit span from the resolver. No measuring.
+	if cell is Dictionary:
+		var s := int(cell.get("span", 0))
+		return max(1, s) if s > 0 else 1
+	return 1
+
 func configure(px:int, vw:int, vh:int, gw:int, gh:int, char_w_px:int = -1) -> void:
 	cell_px = px
 	cell_h_px = px
@@ -37,7 +45,6 @@ func configure(px:int, vw:int, vh:int, gw:int, gh:int, char_w_px:int = -1) -> vo
 	grid_cols = gw
 	grid_rows = gh
 	_view_center = Vector2i(int(view_cols * 0.5), int(view_rows * 0.5))
-	_view_origin_px = -Vector2i(int(view_cols * cell_px * 0.5), int(view_rows * cell_px * 0.5))
 	_view_origin_px = -Vector2i(int(view_cols * cell_w_px * 0.5), int(view_rows * cell_h_px * 0.5))
 	_compute_metrics()
 	queue_redraw()
@@ -92,9 +99,7 @@ func _draw() -> void:
 				if cell.size() > 2: bg = cell[2]
 
 			# per-cell span (wide glyphs)
-			var span := 1
-			if cell is Dictionary:
-				span = int(cell.get("span", 1))
+			var span := _span_for_cell(cell)
 
 			# draw background; if starting a span, paint once across the span
 			if span_run <= 0:
@@ -106,7 +111,7 @@ func _draw() -> void:
 			if facing != Vector2i.ZERO:
 				_draw_facing_border(Vector2(x_px, y_px), facing, rel)
 
-			# draw one foreground glyph if any
+			# draw one foreground glyph if any, only at span head
 			if ch != "" and ch != " " and span_run <= 0:
 				draw_string(
 					font,

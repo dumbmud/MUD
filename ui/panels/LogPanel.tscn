@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bq8cnogxcv4q4" path="res://ui/panels/log_panel.gd" id="1_waxws"]
 [ext_resource type="Script" uid="uid://b5vvvhsvdliem" path="res://scenes/console.gd" id="2_f8k6i"]
-[ext_resource type="FontFile" uid="uid://brxs8mj8h2fj1" path="res://fonts/CozetteVector.ttf" id="3_knd6y"]
+[ext_resource type="FontFile" uid="uid://d3mavtwa0qug6" path="res://fonts/CozetteVector.ttf" id="3_knd6y"]
 
 [node name="LogPanel" type="Node2D"]
 z_index = 100
@@ -11,3 +11,4 @@ script = ExtResource("1_waxws")
 [node name="Console" type="Node2D" parent="."]
 script = ExtResource("2_f8k6i")
 font = ExtResource("3_knd6y")
+font_size = null

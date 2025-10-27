@@ -7,7 +7,6 @@
 script = ExtResource("1")
 id = &"human"
 display_name = "Human"
-glyph = "?"
 fg = Color(1, 0, 1, 1)
 plan = ExtResource("1_llrv4")
 tags = Array[StringName]([&"debug"])
