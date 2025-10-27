@@ -85,3 +85,16 @@ func _focus(p: CanvasItem) -> void:
 
 func _emit_count() -> void:
 	emit_signal("panel_count_changed", _panels.size())
+
+# Returns true if point p (viewport coords) is over any visible panel that
+# exposes a global_rect() -> Rect2.
+func point_hits_panel(p: Vector2) -> bool:
+	for id in _panels.keys():
+		var n : CanvasItem = _panels[id]
+		if n == null or !n.visible:
+			continue
+		if n.has_method("global_rect"):
+			var r: Rect2 = (n.call("global_rect") as Rect2)
+			if r.has_point(p):
+				return true
+	return false

@@ -45,6 +45,12 @@ func _ready() -> void:
 		winmgr.bind(sim, MessageBus, tracked_actor_id)
 
 func _input(event: InputEvent) -> void:
+	# Ignore wheel when cursor is over any UI panel so LogPanel can process it
+	if event is InputEventMouseButton and (
+		event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN
+	):
+		if winmgr != null and winmgr.point_hits_panel(event.position):
+			return
 	if event.is_action_pressed("zoom_in"):
 		zoom_index = clamp(zoom_index + 1, 0, zoom_levels.size() - 1)
 		_apply_zoom()

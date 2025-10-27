@@ -35,6 +35,9 @@ var _left0: float = 0.0
 var _right0: float = 0.0
 var _top0: float = 0.0
 var _bottom0: float = 0.0
+var _scroll_col: int = 0
+var _scrollbar_dragging: bool = false
+var _scroll_drag_offset: int = 0
 
 func bind(bus: Node) -> void:
 	_bus = bus
@@ -68,7 +71,7 @@ func _resolve(p: Vector2i) -> Variant:
 		if x == 0 or x == _cols - 1:
 			return _cell("║")
 		if x == _close_col:
-			return {"ch":"X", "fg": Color(1,0.4,0.4), "bg": Color(0,0,0)}
+			return {"ch":"╳", "fg": Color(1,0.4,0.4), "bg": Color(0,0,0)}
 		return _title_cell_at(x)
 	# Row 2: separator  ╠═…═╣
 	if y == 2:
@@ -83,6 +86,13 @@ func _resolve(p: Vector2i) -> Variant:
 	# Content rows (between separator and bottom)
 	if x == 0 or x == _cols - 1:
 		return _cell("║")
+  # Scrollbar column inside content area only
+	if _scrollbar_visible() and x == _scroll_col and y >= 3 and y <= _rows - 2:
+		var m := _thumb_metrics()
+		var track_y0: int = 3
+		var thumb_top: int = int(m["top"]) + track_y0
+		var thumb_bot: int = thumb_top + int(m["thumb_h"]) - 1
+		return {"ch": ("█" if y >= thumb_top and y <= thumb_bot else "│"), "fg": Color(1,1,1), "bg": Color(0,0,0)}
 	var content_rows: int = _rows - 4             # rows between sep and bottom
 	var vis_row: int = y - 3                      # 0..content_rows-1 from top
 	var src_from_bottom: int = content_rows - 1 - vis_row + _scroll
@@ -98,11 +108,21 @@ func _char_from(s: String, col: int, max_cols: int = 9999) -> Dictionary:
 		return {"ch":" ", "fg": Color(1,1,1), "bg": Color(0,0,0)}
 	return {"ch": s[col], "fg": Color(1,1,1), "bg": Color(0,0,0)}
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if !visible:
 		return
 	if event is InputEventMouseButton:
 		var mb := event as InputEventMouseButton
+		# 1) Wheel scroll
+		if mb.button_index == MOUSE_BUTTON_WHEEL_UP or mb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			var up: bool = (mb.button_index == MOUSE_BUTTON_WHEEL_UP)
+			var content_rows: int = _rows - 4
+			var max_scroll: int = max(0, _wrapped.size() - content_rows)
+			_auto_anchor_last_head = false
+			_scroll = clamp(_scroll + (1 if up else -1), 0, max_scroll)
+			cons.redraw(Vector2i.ZERO)
+			return
+		# 2) Non-left buttons ignored
 		if mb.button_index != MOUSE_BUTTON_LEFT:
 			return
 		var lp := to_local(mb.position)
@@ -112,6 +132,16 @@ func _unhandled_input(event: InputEvent) -> void:
 		var sx := int(floor((lp.x - origin_x) / CHAR_W))
 		var sy := int(floor((lp.y - origin_y) / CELL_H))
 		if mb.pressed:
+			# Scrollbar drag start
+			if _scrollbar_visible() and sx == _scroll_col and sy >= 3 and sy <= _rows - 2:
+				var m := _thumb_metrics()
+				var thumb_top_cell: int = 3 + int(m["top"])
+				_scrollbar_dragging = true
+				_scroll_drag_offset = sy - thumb_top_cell
+				_auto_anchor_last_head = false
+				_update_scroll_from_thumb(thumb_top_cell)
+				cons.redraw(Vector2i.ZERO)
+				return
 			# Try resize first (edges or corners)
 			var hit_mode := _hit_resize_zone(sx, sy)
 			if hit_mode != 0:
@@ -130,6 +160,10 @@ func _unhandled_input(event: InputEvent) -> void:
 				_resizing = false
 				_resize_mode = 0
 				return
+			# Stop scrollbar drag on release
+			if _scrollbar_dragging:
+				_scrollbar_dragging = false
+				return
 			# Close only on RELEASE exactly on the 'X' cell
 			if sy == 1 and sx == _close_col:
 				visible = false
@@ -142,6 +176,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and _resizing:
 		var mm := event as InputEventMouseMotion
 		_apply_resize(mm.position - _resize_mouse0)
+		return
+	if event is InputEventMouseMotion and _scrollbar_dragging:
+		var mm := event as InputEventMouseMotion
+		var lp2 := to_local(mm.position)
+		var origin_y2 := -int(_rows * CELL_H * 0.5)
+		var sy2 := int(floor((lp2.y - origin_y2) / CELL_H))
+		_update_scroll_from_thumb(sy2 - _scroll_drag_offset)
+		cons.redraw(Vector2i.ZERO)
 		return
 	if event is InputEventMouseMotion:
 		return
@@ -196,6 +238,7 @@ func _reconfigure() -> void:
 	_cols = max(_cols, _min_cols())
 	_rows = max(_rows, MIN_ROWS)
 	_close_col = _cols - 3
+	_scroll_col = _cols - 2
 	cons.configure(CELL_H, _cols, _rows, _cols, _rows, CHAR_W)
 	_rebuild_wrap()
 	cons.redraw(Vector2i.ZERO)
@@ -203,7 +246,10 @@ func _reconfigure() -> void:
 
 # ── wrapping helpers ─────────────────────────────────────────────────────────
 func _visible_width() -> int:
-	return max(0, _cols - 2)
+	var w: int = _cols - 2
+	if _scrollbar_visible():
+		w -= 1
+	return max(0, w)
 
 func _rebuild_wrap() -> void:
 	_wrapped.clear()
@@ -272,6 +318,43 @@ func _wrap_text(s: String, width: int) -> Array[String]:
 		out.append("")
 	return out
 
+
+func _scrollbar_visible() -> bool:
+	var content_rows: int = _rows - 4
+	return _wrapped.size() > content_rows
+
+func _thumb_metrics() -> Dictionary:
+	var content_rows: int = _rows - 4
+	var total: int = _wrapped.size()
+	var track_h: int = max(0, content_rows)
+	if track_h <= 0:
+		return {"track_h": 0, "thumb_h": 0, "top": 0}
+	var thumb_h: int
+	if total <= 0 or total <= track_h:
+		thumb_h = track_h
+	else:
+		thumb_h = clamp(int(round(float(track_h) * float(track_h) / float(total))), 1, track_h)
+	var max_scroll: int = max(0, total - track_h)
+	var top: int = 0
+	if max_scroll > 0 and track_h - thumb_h > 0:
+		# invert: 0 scroll → thumb at bottom
+		top = int(round(float(max_scroll - _scroll) * float(track_h - thumb_h) / float(max_scroll)))
+	return {"track_h": track_h, "thumb_h": thumb_h, "top": top}
+
+func _update_scroll_from_thumb(thumb_top_cell: int) -> void:
+	var m := _thumb_metrics()
+	var track_h: int = int(m["track_h"])
+	var thumb_h: int = int(m["thumb_h"])
+	if track_h <= 0 or thumb_h <= 0:
+		_scroll = 0
+		return
+	var max_scroll: int = max(0, _wrapped.size() - track_h)
+	if max_scroll <= 0:
+		_scroll = 0
+		return
+	var top_rel: int = clamp(thumb_top_cell - 3, 0, max(0, track_h - thumb_h))
+	var new_scroll: int = max_scroll - int(round(float(top_rel) * float(max_scroll) / float(track_h - thumb_h)))
+	_scroll = clamp(new_scroll, 0, max_scroll)
 
 # ── resize helpers ───────────────────────────────────────────────────────────
 func _hit_resize_zone(sx: int, sy: int) -> int:
@@ -343,8 +426,7 @@ func _apply_resize(delta: Vector2) -> void:
 	# quantize to cell grid
 	var cols_q: int = clamp(int(round(w / float(CHAR_W))), _min_cols(), 999)
 	var rows_q: int = clamp(int(round(h / float(CELL_H))), MIN_ROWS, 200)
-	var wq: float = float(cols_q * CHAR_W)
-	var hq: float = float(rows_q * CELL_H)
+
 	# center from (left,right,top,bottom)
 	var cx_new: float = (left + right) * 0.5
 	var cy_new: float = (top + bottom) * 0.5
@@ -355,3 +437,10 @@ func _apply_resize(delta: Vector2) -> void:
 		_rows = rows_q
 		global_position = Vector2(cx_new, cy_new)
 		_reconfigure()
+
+# Expose panel bounds in viewport coordinates for hit testing.
+func global_rect() -> Rect2:
+	var w := float(_cols * CHAR_W)
+	var h := float(_rows * CELL_H)
+	var tl := global_position - Vector2(w, h) * 0.5
+	return Rect2(tl, Vector2(w, h))
