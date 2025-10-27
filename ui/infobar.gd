@@ -70,7 +70,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif _in_range("vitals", sx):
 		if _win: _win.open(&"actor_sheet")
 	elif _in_range("message", sx):
-		if _win: _win.open(&"log_console")
+		if _win: _win.toggle(&"log_console")
 
 func _in_range(name: String, x: int) -> bool:
 	if !_ranges.has(name): return false
