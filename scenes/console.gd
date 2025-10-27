@@ -13,7 +13,9 @@ extends Node2D
 @export var font: FontFile
 @export var font_size := 26
 
-var cell_px := 26
+var cell_px := 26                    # kept for backward compat
+var cell_w_px := 26
+var cell_h_px := 26
 var view_cols := 0
 var view_rows := 0
 var grid_cols := 0
@@ -26,14 +28,17 @@ var _view_origin_px := Vector2i.ZERO
 
 var _get_cell: Callable = Callable(self, "_blank_cell")   # safe default
 
-func configure(px:int, vw:int, vh:int, gw:int, gh:int) -> void:
+func configure(px:int, vw:int, vh:int, gw:int, gh:int, char_w_px:int = -1) -> void:
 	cell_px = px
+	cell_h_px = px
+	cell_w_px = (char_w_px if char_w_px > 0 else px)
 	view_cols = vw
 	view_rows = vh
 	grid_cols = gw
 	grid_rows = gh
 	_view_center = Vector2i(int(view_cols * 0.5), int(view_rows * 0.5))
 	_view_origin_px = -Vector2i(int(view_cols * cell_px * 0.5), int(view_rows * cell_px * 0.5))
+	_view_origin_px = -Vector2i(int(view_cols * cell_w_px * 0.5), int(view_rows * cell_h_px * 0.5))
 	_compute_metrics()
 	queue_redraw()
 
@@ -50,7 +55,7 @@ func _compute_metrics() -> void:
 	font.oversampling = 1.0
 	var h := font.get_height(font_size)
 	var asc := font.get_ascent(font_size)
-	var vpad: float = (cell_px - h) * 0.5
+	var vpad: float = (cell_h_px - h) * 0.5
 	_baseline = roundi(vpad + asc)
 
 func _draw() -> void:
@@ -58,9 +63,9 @@ func _draw() -> void:
 	if !_get_cell.is_valid(): return
 
 	for sy in range(view_rows):
-		var y_px := _view_origin_px.y + sy * cell_px
+		var y_px := _view_origin_px.y + sy * cell_h_px
 		for sx in range(view_cols):
-			var x_px := _view_origin_px.x + sx * cell_px
+			var x_px := _view_origin_px.x + sx * cell_w_px
 			var wx := _player.x + (sx - _view_center.x)
 			var wy := _player.y + (sy - _view_center.y)
 
@@ -86,7 +91,7 @@ func _draw() -> void:
 				if cell.size() > 2: bg = cell[2]
 
 			# draw background per cell
-			draw_rect(Rect2(Vector2(x_px, y_px), Vector2(cell_px, cell_px)), bg, true)
+			draw_rect(Rect2(Vector2(x_px, y_px), Vector2(cell_w_px, cell_h_px)), bg, true)
 
 			# draw facing overlay if provided
 			if facing != Vector2i.ZERO:
@@ -99,12 +104,14 @@ func _draw() -> void:
 					Vector2(x_px, y_px + _baseline),
 					ch,
 					HORIZONTAL_ALIGNMENT_CENTER,
-					cell_px,
+					cell_w_px,
 					font_size,
 					fg
 				)
 
 # Facing overlay: thin border segment ──────────────────────────────────────────
+# TODO now that console is multi-purpose, this feels weird to have in here.
+# it also assumes square tiles
 
 func _rel_color(rel: int) -> Color:
 	if rel < 0:   return Color(1, 0, 0)   # hostile: red

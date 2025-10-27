@@ -14,6 +14,8 @@ class_name SimView
 @onready var cam: Camera2D     = $Camera
 @onready var console: Console  = $Console
 @onready var hud: UIOverlay    = $UI/HUD
+@onready var winmgr: WindowManager = $UI/WindowManager
+@onready var infobar: InfoBar = $UI/InfoBar
 
 var zoom_levels: Array[float] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0]
 var zoom_index := 10
@@ -36,6 +38,11 @@ func _ready() -> void:
 	# Initial draw
 	_redraw()
 	_update_hud()
+	# Bind Console-based InfoBar
+	if infobar != null:
+		infobar.bind(sim, MessageBus, winmgr, tracked_actor_id)
+	if winmgr != null:
+		winmgr.bind(sim, MessageBus, tracked_actor_id)
 
 func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("zoom_in"):

@@ -18,6 +18,8 @@ var _mode_stack: Array[int] = [Mode.GAMEPLAY]
 var _player_controller: Variant = null   # expects push(Dictionary) and set_hold_sampler(Callable)
 var _desired_gait: int = 1  # 0..3
 
+# UI signals
+signal gait_changed(gait: int)
 # ─────────────────────────────────────────────────────────────────────────────
 # Public API
 # ─────────────────────────────────────────────────────────────────────────────
@@ -36,6 +38,21 @@ func pop_mode() -> void:
 
 func current_mode() -> int:
 	return _mode_stack.back()
+
+# ─────────────────────────────────────────────────────────────────────────────
+# UI helpers
+# ─────────────────────────────────────────────────────────────────────────────
+
+func get_desired_gait() -> int:
+	return _desired_gait
+
+static func gait_name(g: int) -> String:
+	match g:
+		0: return "Sneak"
+		1: return "Walk"
+		2: return "Jog"
+		3: return "Sprint"
+		_: return "Walk"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Godot input hook
@@ -94,6 +111,7 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("gait_cycle"):
 		_desired_gait = (_desired_gait + 1) % 4
 		kicked = true
+		emit_signal("gait_changed", _desired_gait)
 
 	# In TB, kick one step per tap. In RT, GameLoop ignores kicks.
 	if kicked:

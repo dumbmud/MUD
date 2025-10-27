@@ -9,6 +9,8 @@
 
 [node name="SimView" type="Node2D"]
 script = ExtResource("1_i2epp")
+sim_core = null
+tracked_actor_id = null
 
 [node name="Camera" type="Camera2D" parent="."]
 
