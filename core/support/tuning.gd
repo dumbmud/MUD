@@ -21,10 +21,10 @@ const BASE_STAMINA_REGEN_PER_SEC := 0.8   # constant regen, independent of mode
 
 # Drain multipliers per mode (set time-to-empty targets)
 const MODE_DRAIN_MULT := {
-	MODE_BLUE:   0.2,    # below regen → indefinite travel for healthy actors
-	MODE_GREEN:  1.0,    # ~break-even baseline; load/heat flips negative
-	MODE_ORANGE: 3.333,  # ~30 s to 0 from full
-	MODE_RED:   16.667   # ~6 s to 0
+	MODE_BLUE:   0.20,    # net +0.60/s while traveling at baseline (0.8 - 0.2)
+	MODE_GREEN:  0.80,    # break-even at baseline; hours if cardio*thermo > 1
+	MODE_ORANGE: 4.133,   # 4.133 - 0.8 = 3.333 → 100/3.333 ≈ 30 s
+	MODE_RED:   17.467    # 17.467 - 0.8 = 16.667 → 100/16.667 ≈ 6 s
 }
 
 # Optional start burst floors
