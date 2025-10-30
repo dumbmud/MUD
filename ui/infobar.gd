@@ -2,7 +2,7 @@ class_name InfoBar
 extends Node2D
 
 const CELL_H := 26               # row height in px
-const CHAR_W := 13               # column width in px for UI monospace
+const CHAR_W := 12               # column width in px for UI monospace
 const ROWS := 1
 
 @onready var cons: Console = $Console
@@ -103,16 +103,20 @@ func _compose_line() -> Array:
 	# spacer
 	_push_text(cells, " ", Color(1,1,1))
 
-	# 2) Gait + Stamina
-	var gait := InputManager.get_desired_gait()
-	var gait_txt := "Gait: "+InputManager.gait_name(gait)+" "
-	_push_text(cells, gait_txt, Color(1,1,1))
-	_push_stamina_bar(cells)
+	# 2) Stamina bar + speed
+	var mode := InputManager.get_desired_gait()    # 0..3 Blue/Green/Orange/Red
 	var a := _sim.get_actor(_tracked_id) if _sim else null
 	if a != null:
-		var sec := Physio.step_seconds(a, Vector2i(1,0), gait)
-		var mps : float = (1.0 / max(0.001, sec))
-		_push_text(cells, "@%.2fm/s " % mps, Color(0.8,0.8,0.8))
+		# stamina bar using 🭵…🭰 with partials
+		var bar := _stamina_bar(a, 10)
+		_push_text(cells, bar, Color(1,1,1))
+		# colored speed label after the bar
+		var speed_cells := _speed_label(a, mode)
+		for cell in speed_cells:
+			cells.append(cell)
+	else:
+		_push_text(cells, "🭵          🭰¼@0.00m/s ", Color(0.6,0.6,0.6))
+
 
 	# spacer
 	_push_text(cells, "  ", Color(1,1,1))
@@ -184,3 +188,73 @@ func _msg_color(kind: StringName) -> Color:
 		"error": return Color(1,0.3,0.3)
 		"warn", "warning": return Color(1,0.75,0.3)
 		_: return Color(1,1,1)
+
+func _mode_color(mode:int) -> Color:
+	# Blue, Green, Orange, Red
+	match mode:
+		0: return Color(0.33, 0.67, 1.0)
+		1: return Color(0.33, 1.0, 0.33)
+		2: return Color(1.0, 0.66, 0.25)
+		3: return Color(1.0, 0.33, 0.33)
+		_: return Color(1,1,1)
+
+func _mode_glyph(mode:int) -> String:
+	match mode:
+		0: return "¼"
+		1: return "½"
+		2: return "¾"
+		3: return "¹"
+		_: return "¼"
+
+func _speed_mps(actor: Actor, mode:int) -> float:
+	# Cardinal step duration → m/s
+	var sec := Physio.step_seconds(actor, Vector2i(1,0), mode)
+	return 0.0 if sec <= 0.0 else (1.0 / sec)
+
+func _speed_label(actor: Actor, mode:int) -> Array:
+	var mps := _speed_mps(actor, mode)
+	var s := "%s@%.2fm/s" % [_mode_glyph(mode), mps]
+	var c := _mode_color(mode)
+	var out: Array = []
+	for i in s.length():
+		out.append({"ch": s[i], "fg": c, "bg": Color(0,0,0)})
+	return out
+
+# Partial block for last cell: 0..1 → glyph
+func _partial_block(frac: float) -> String:
+	var f : float = clamp(frac, 0.0, 1.0)
+	if f < 0.125: return " "
+	elif f < 0.25: return "▏"   # 1/8
+	elif f < 0.375: return "▎"  # 2/8
+	elif f < 0.5: return "▍"    # 3/8
+	elif f < 0.625: return "▌"  # 4/8
+	elif f < 0.75: return "▋"   # 5/8
+	elif f < 0.875: return "▊"  # 6/8
+	else: return "▉"            # 7/8
+
+func _stamina_bar(actor: Actor, slots:int=10) -> String:
+	# Format: 🭵 + slots of fill + 🭰 ; last slot can be partial; empties are spaces.
+	var st: Dictionary = actor.stamina
+	var v := float(st.get("value", 0.0))
+	var mx : float = max(1.0, float(st.get("max", 100.0)))
+	var p : float = clamp(v / mx, 0.0, 1.0)
+	var filled := int(floor(p * slots))
+	var frac := p * slots - float(filled)
+
+	var s := "🭵"
+	# full blocks
+	for i in range(filled):
+		s += "█"
+	# partial slot
+	var used := filled
+	if used < slots:
+		var part := _partial_block(frac)
+		if part != " ":
+			s += part
+			used += 1
+	# empties
+	for i in range(slots - used):
+		s += " "
+	# cap
+	s += "🭰"
+	return s

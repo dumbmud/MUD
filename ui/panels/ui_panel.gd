@@ -15,7 +15,7 @@ extends Node2D
 
 # Sizing
 const CELL_H := 26
-const CHAR_W := 13
+const CHAR_W := 12
 const MIN_ROWS := 5
 const MIN_COLS_FLOOR := 18
 
