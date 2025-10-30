@@ -1,6 +1,6 @@
 # res://core/support/activity.gd
-extends RefCounted
 class_name Activity
+extends RefCounted
 ##
 ## Work-in-progress for a verb.
 ## - `remaining` is total phase still required to commit.

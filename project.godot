@@ -17,13 +17,13 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-SpeciesDB="*res://autoloads/species_db.gd"
 VerbRegistry="*res://autoloads/verb_registry.gd"
 VerbsInit="*res://autoloads/verbs_init.gd"
 MessageBus="*res://autoloads/message_bus.gd"
 GridOccupancy="*res://autoloads/grid_occupancy.gd"
 InputManager="*res://autoloads/input_manager.gd"
 GameLoop="*res://autoloads/game_loop.gd"
+BodyDB="*res://autoloads/body_db.gd"
 
 [display]
 

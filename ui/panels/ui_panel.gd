@@ -1,6 +1,6 @@
 # file: res://ui/panels/ui_panel.gd
-extends Node2D
 class_name UIPanel
+extends Node2D
 ##
 ## Reusable console-driven panel shell.
 ## Owns: frame, title, close, drag, edge/corner resize, wheel scroll, scrollbar.

@@ -1,6 +1,6 @@
 # res://world/world_api.gd
-extends Node
 class_name WorldAPI
+extends Node
 ## Contract for worlds used by SimCore/SimManager.
 
 func is_passable(_p: Vector2i) -> bool:

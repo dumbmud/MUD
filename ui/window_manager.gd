@@ -1,5 +1,5 @@
-extends Control
 class_name WindowManager
+extends Control
 
 signal panel_count_changed(count: int)
 

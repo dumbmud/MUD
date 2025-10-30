@@ -1,6 +1,6 @@
 # res://core/input/command_source.gd
-extends RefCounted
 class_name CommandSource
+extends RefCounted
 ##
 ## Abstract command source for an Actor.
 ## Scheduler asks each source for the next command at boundaries.

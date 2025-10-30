@@ -1,6 +1,6 @@
 # res://controllers/ai_patrol_controller.gd
-extends CommandSource
 class_name AIPatrolController
+extends CommandSource
 ##
 ## Minimal patrol AI:
 ## - Try to move in a fixed direction.
@@ -14,7 +14,7 @@ func set_initial_dir(d: Vector2i) -> void:
 	_dir = Vector2i(clamp(d.x, -1, 1), clamp(d.y, -1, 1))
 
 func set_gait(g: int) -> void:
-	_gait = clampi(g, 0, 3)
+	_gait = clampi(g, 0, 2)
 
 func dequeue(a: Actor, sim: SimManager) -> Variant:
 	var cmd := {"verb": &"Move", "args": {"dir": _dir, "gait": _gait}}

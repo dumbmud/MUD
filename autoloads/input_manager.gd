@@ -16,7 +16,7 @@ enum Mode { GAMEPLAY, UI_MENU, TEXT }
 
 var _mode_stack: Array[int] = [Mode.GAMEPLAY]
 var _player_controller: Variant = null   # expects push(Dictionary) and set_hold_sampler(Callable)
-var _desired_gait: int = 1  # 0..3
+var _desired_gait: int = 0  # 0..3
 
 # UI signals
 signal gait_changed(gait: int)
@@ -48,11 +48,11 @@ func get_desired_gait() -> int:
 
 static func gait_name(g: int) -> String:
 	match g:
-		0: return "Sneak"
-		1: return "Walk"
-		2: return "Jog"
-		3: return "Sprint"
-		_: return "Walk"
+		0: return "Blue"
+		1: return "Green"
+		2: return "Orange"
+		3: return "Red"
+		_: return "Blue"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Godot input hook
@@ -127,36 +127,30 @@ func _hold_sampler_impl() -> Array[Dictionary]:
 
 	var out: Array[Dictionary] = []
 
-	# Aggregate 8-way movement.
+	# Aggregate 8-way
 	var x := int(Input.is_action_pressed("move_right")) - int(Input.is_action_pressed("move_left"))
 	var y := int(Input.is_action_pressed("move_down")) - int(Input.is_action_pressed("move_up"))
 	var v := Vector2i(x, y)
 
-	# Prefer diagonals if no axial input.
+	# Prefer diagonals if no axial input
 	if v == Vector2i.ZERO:
-		if Input.is_action_pressed("move_upleft"):
-			v = Vector2i(-1, -1)
-		elif Input.is_action_pressed("move_upright"):
-			v = Vector2i(1, -1)
-		elif Input.is_action_pressed("move_downleft"):
-			v = Vector2i(-1, 1)
-		elif Input.is_action_pressed("move_downright"):
-			v = Vector2i(1, 1)
+		if Input.is_action_pressed("move_upleft"):   v = Vector2i(-1, -1)
+		elif Input.is_action_pressed("move_upright"): v = Vector2i( 1, -1)
+		elif Input.is_action_pressed("move_downleft"):v = Vector2i(-1,  1)
+		elif Input.is_action_pressed("move_downright"):v=Vector2i( 1,  1)
 
-	# Normalize to unit step.
+	# Normalize
 	if v.x != 0: v.x = sign(v.x)
 	if v.y != 0: v.y = sign(v.y)
 
+	# One Move with gait (no gait-less Move before this)
 	if v != Vector2i.ZERO:
-		out.append({"verb": &"Move", "args": {"dir": v}})
+		out.append({"verb": &"Move", "args": {"dir": v, "gait": _desired_gait}})
 
 	# Held waits
 	if Input.is_action_pressed("wait_drain"):
 		out.append({"verb": &"Wait", "args": {"ticks": 0}})
 	if Input.is_action_pressed("wait_5"):
 		out.append({"verb": &"Wait", "args": {"ticks": 5}})
-	
-	if v != Vector2i.ZERO:
-		out.append({"verb": &"Move", "args": {"dir": v, "gait": _desired_gait}})
 
 	return out

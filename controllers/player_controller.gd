@@ -1,6 +1,6 @@
 # res://controllers/player_controller.gd
-extends CommandSource
 class_name PlayerController
+extends CommandSource
 ##
 ## Player-controlled command source.
 ## - No tick locks. Scheduler decides pacing.

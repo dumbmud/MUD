@@ -1,6 +1,6 @@
 # res://world/world_test.gd
-extends WorldAPI
 class_name WorldTest
+extends WorldAPI
 
 # Map bounds
 const GRID_MIN := Vector2i(-20, -20)

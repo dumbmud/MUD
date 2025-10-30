@@ -1,6 +1,6 @@
 # file: res://ui/panels/log_panel2.gd  (NEW)
-extends UIPanel
 class_name LogPanel
+extends UIPanel
 ##
 ## Message log panel on top of UIPanel.
 ## - Width-aware wrapping with multi-column glyphs.

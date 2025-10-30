@@ -1,6 +1,6 @@
 # res://scenes/game_boot.gd
-extends Node
 class_name GameBoot
+extends Node
 ##
 ## Bootstrap wiring:
 ## - Registers SimManager with GameLoop.

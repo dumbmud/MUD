@@ -1,18 +1,19 @@
 [gd_resource type="Resource" script_class="Species" load_steps=3 format=3 uid="uid://dol6ljy0i55o2"]
 
-[ext_resource type="Script" uid="uid://vita0yaqtv3h" path="res://creatures/_types/species.gd" id="1"]
-[ext_resource type="Resource" uid="uid://hwiecr1hhbor" path="res://bodies/plans/Human.plan.tres" id="1_llrv4"]
+[ext_resource type="Resource" uid="uid://cmd3o7s2ncphk" path="res://bodies/plans/Human.graph.tres" id="1_llrv4"]
+[ext_resource type="Script" uid="uid://vita0yaqtv3h" path="res://creatures/_types/species.gd" id="2_ovwmi"]
 
 [resource]
-script = ExtResource("1")
+script = ExtResource("2_ovwmi")
 id = &"human"
 display_name = "Human"
+glyph = "?"
 fg = Color(1, 0, 1, 1)
-plan = ExtResource("1_llrv4")
+graph = ExtResource("1_llrv4")
 tags = Array[StringName]([&"debug"])
 death_policy = {
 "or": [{
-"organ_destroyed": "brain"
+"organ_destroyed": "controller0"
 }, {
 "channel_depleted": {
 "name": "oxygen",

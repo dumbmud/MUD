@@ -1,6 +1,6 @@
 # res://scenes/sim_manager.gd
-extends Node2D
 class_name SimManager
+extends Node2D
 ##
 ## Pure scheduler.
 ## - No knowledge of TB/RT or “player”.
@@ -130,6 +130,18 @@ func _begin_tick_if_needed() -> void:
 func _end_tick() -> void:
 	if !in_tick:
 		return
+	
+	# TODO tie into survival system
+	# background stamina regen for all actors
+	var dt := float(PHASE_PER_TICK) * 0.001  # 100 ms/tick ⇒ 0.1 s
+	for a in actors:
+		var st: Dictionary = a.stamina
+		var v := float(st.get("value", 0.0))
+		var mx := float(st.get("max", 100.0))
+		v = clampf(v + Physio.stamina_regen_over(a, dt), 0.0, mx)
+		st["value"] = v
+		a.stamina = st
+	
 	in_tick = false
 	tick_count += 1
 	emit_signal("tick_advanced", tick_count)

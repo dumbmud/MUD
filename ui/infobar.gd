@@ -1,5 +1,5 @@
-extends Node2D
 class_name InfoBar
+extends Node2D
 
 const CELL_H := 26               # row height in px
 const CHAR_W := 13               # column width in px for UI monospace
@@ -108,6 +108,11 @@ func _compose_line() -> Array:
 	var gait_txt := "Gait: "+InputManager.gait_name(gait)+" "
 	_push_text(cells, gait_txt, Color(1,1,1))
 	_push_stamina_bar(cells)
+	var a := _sim.get_actor(_tracked_id) if _sim else null
+	if a != null:
+		var sec := Physio.step_seconds(a, Vector2i(1,0), gait)
+		var mps : float = (1.0 / max(0.001, sec))
+		_push_text(cells, "@%.2fm/s " % mps, Color(0.8,0.8,0.8))
 
 	# spacer
 	_push_text(cells, "  ", Color(1,1,1))
@@ -150,11 +155,17 @@ func _push_text(cells: Array, s: String, col: Color, tag: String="") -> void:
 
 func _push_stamina_bar(cells: Array) -> void:
 	var a := _sim.get_actor(_tracked_id) if _sim else null
-	if a == null or a.stamina_max <= 0.0:
+	if a == null:
+		_push_text(cells, "[----/----] ", Color(0.7,0.7,0.7))
+		return
+	var st: Dictionary = a.stamina if a.stamina is Dictionary else {}
+	var mx := float(st.get("max", 100.0))
+	var val := float(st.get("value", 0.0))
+	if mx <= 0.0:
 		_push_text(cells, "[----/----] ", Color(0.7,0.7,0.7))
 		return
 	var slots := 12
-	var pct : float = clamp(a.stamina / a.stamina_max, 0.0, 1.0)
+	var pct : float = clamp(val / mx, 0.0, 1.0)
 	var filled := int(round(pct * slots))
 	var s := "["
 	for i in range(slots):

@@ -1,6 +1,6 @@
 # res://creatures/_types/body_plan.gd
-extends Resource
 class_name BodyPlan
+extends Resource
 ##
 ## BodyPlan v2.1
 ## Container for BodyPart resources (targetable ZONES and INTERNAL organs).

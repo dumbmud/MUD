@@ -1,16 +1,10 @@
-# res://core/verbs/move_verb.gd
-extends Verb
 class_name MoveVerb
-##
-## Move one tile if passable and unoccupied.
-## Corner rule: diagonal allowed unless both adjacent orthogonals are blocked.
-## Cost is elapsed time: 1 phase = 1 ms. Uses Physio for seconds.
+extends Verb
 
 static func _move_blocked(sim: SimManager, from: Vector2i, dir: Vector2i, target: Vector2i) -> bool:
 	var world := sim.world
 	if world == null: return true
 	if !world.is_passable(target): return true
-	# Diagonal squeeze: forbid only when both orthogonals are impassable.
 	if abs(dir.x) + abs(dir.y) == 2:
 		var side_a := Vector2i(from.x + dir.x, from.y)
 		var side_b := Vector2i(from.x, from.y + dir.y)
@@ -26,6 +20,11 @@ func can_start(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	var t := a.grid_pos + d
 	if _move_blocked(sim, a.grid_pos, d, t): return false
 	if GridOccupancy.has_pos(t): return false
+
+	var mode := int(args.get("gait", -1))
+	if !Physio.can_afford_move(a, d, mode):
+		MessageBus.send_once_per_tick(&"tired_move", "Too tired for current mode", &"warn", sim.tick_count, a.actor_id)
+		return false
 	return true
 
 func phase_cost(a: Actor, args: Dictionary, _sim: SimManager) -> int:
@@ -46,10 +45,14 @@ func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	if !GridOccupancy.move(a.actor_id, t):
 		return false
 	a.grid_pos = t
+	
+	
+	var mode := int(args.get("gait", -1))
+	var seconds := Physio.step_seconds(a, d, mode)
+	var cost := Physio.move_cost(a, seconds, mode)
+	var st: Dictionary = a.stamina
+	st["value"] = clampf(float(st.get("value", 0.0)) - cost, 0.0, float(st.get("max", 100.0)))
+	a.stamina = st
 
-	# Apply time-based stamina drain for movement.
-	var g_hint := int(args.get("gait", -1))
-	var seconds := Physio.step_seconds(a, d, g_hint)
-	var delta := Physio.stamina_delta_on_move(a, seconds)
-	a.stamina = clampf(a.stamina + delta, 0.0, a.stamina_max)
+	
 	return true

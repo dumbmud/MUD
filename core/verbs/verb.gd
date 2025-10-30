@@ -1,6 +1,6 @@
 # res://core/verbs/verb.gd
-extends RefCounted
 class_name Verb
+extends RefCounted
 
 func can_start(_a: Actor, _args: Dictionary, _sim: SimManager) -> bool:
 	return false

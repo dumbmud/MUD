@@ -1,6 +1,6 @@
 # res://scenes/sim_view.gd
-extends Node2D
 class_name SimView
+extends Node2D
 ##
 ## View wiring for the pure scheduler:
 ## - Subscribes to SimManager signals and redraws the Console.

@@ -1,6 +1,6 @@
 # res://creatures/_types/body_part.gd
-extends Resource
 class_name BodyPart
+extends Resource
 ##
 ## BodyPart v2.1 (species-agnostic)
 ## One resource type used for both targetable ZONES and INTERNAL organs.
