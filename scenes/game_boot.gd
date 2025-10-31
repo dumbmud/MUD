@@ -24,6 +24,7 @@ func _ready() -> void:
 	InputManager.set_player_controller(pc)  # also registers controller with GameLoop
 
 	# Debug NPCs
+	# TODO fix fallback npc
 	_spawn_npc(sim, 1, &"human", Vector2i(-15, -8), Vector2i(1, 0))
 	_spawn_npc(sim, 2, &"human", Vector2i(-18, 0),  Vector2i(1, 0))
 

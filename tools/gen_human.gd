@@ -9,6 +9,7 @@ extends EditorScript
 
 const GRAPH_OUT   := "res://bodies/plans/Human.graph.tres"
 const SPECIES_OUT := "res://bodies/species/human.tres"
+const SPECIES_SCRIPT := preload("res://creatures/_types/species.gd")
 
 const SKIN_HP := 100
 const SOFT_HP := 100
@@ -34,6 +35,11 @@ func _run() -> void:
 
 	get_editor_interface().get_resource_filesystem().scan()
 	print("Generated:", GRAPH_OUT, "and", SPECIES_OUT)
+
+func _new_species() -> Species:
+	var res := Resource.new()
+	res.set_script(SPECIES_SCRIPT)
+	return res as Species
 
 # ── Builders ─────────────────────────────────────────────────────────────────
 
@@ -118,22 +124,33 @@ func _build_human_graph() -> BodyGraph:
 	return g
 
 func _build_human_species(graph_path:String) -> Species:
-	var s := Species.new()
+	var s := _new_species()
 	s.id = &"human"
 	s.display_name = "Human"
 	s.glyph = "?"
-	s.fg = Color(1, 0, 1, 1)   # magenta fallback glyph
+	s.fg = Color(1, 0, 1, 1)
 	s.graph = load(graph_path)
-	s.tags = [&"debug"]
+	# Tags
+	s.tags = [&"debug", &"sleep_required", &"solid_excretion", &"requires_gas:oxygen"]
+	# Policy / physicals
 	s.size_scale = 1.0
 	s.death_policy = {
 		"or": [
-			{"organ_destroyed": "controller0"}, # placeholder; controller by policy
+			{"organ_destroyed": "controller0"},
 			{"channel_depleted": {"name": "oxygen", "ticks": 300}}
 		]
 	}
 	s.body_mass_kg = 70.0
+	# Survival defaults
+	s.survival = {
+		"diet_eff": {"plant": 0.6, "meat": 0.9},
+		"diet_req": {"plant_min": 0.2, "meat_min": 0.1},
+		"temp_band": {"min_C": 35.0, "max_C": 39.0},
+		"requires_gas": "oxygen",
+		"start_fat_kg": 12.0
+	}
 	return s
+
 
 # ── Node/socket/port helpers ─────────────────────────────────────────────────
 

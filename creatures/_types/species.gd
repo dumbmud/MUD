@@ -20,3 +20,6 @@ extends Resource
 @export var size_scale: float = 1.0
 @export var death_policy: Dictionary = {}
 @export var body_mass_kg: float = 70.0
+
+# Survival knobs (species-local defaults and requirements)
+@export var survival: Dictionary = {}

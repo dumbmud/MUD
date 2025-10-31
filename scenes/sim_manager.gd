@@ -40,6 +40,7 @@ func add_actor(a: Actor, src: CommandSource) -> void:
 	controller_by_id[a.actor_id] = src
 	activity_by_id[a.actor_id] = null
 	GridOccupancy.claim(a.actor_id, a.grid_pos)
+	Survival.init_for(a)
 
 func get_actor(id: int) -> Actor:
 	return actor_by_id.get(id, null)
@@ -130,10 +131,16 @@ func _begin_tick_if_needed() -> void:
 func _end_tick() -> void:
 	if !in_tick:
 		return
+	var dt := float(PHASE_PER_TICK) * 0.001  # 100 ms/tick -> 0.1 s
+	
+	for a in actors:
+		var env := world.environment_at(a.grid_pos) if world != null else {
+			"medium": &"air", "gas": {&"oxygen": 0.21}, "temp_C": 21.0, "humidity": 0.5, "water_available": false
+		}
+		Survival.tick(a, dt, env, tick_count)
 	
 	# TODO tie into survival system
 	# background stamina regen for all actors
-	var dt := float(PHASE_PER_TICK) * 0.001  # 100 ms/tick ⇒ 0.1 s
 	for a in actors:
 		var st: Dictionary = a.stamina
 		var v := float(st.get("value", 0.0))

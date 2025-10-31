@@ -68,6 +68,7 @@ func _compile_species(sres: Species) -> Dictionary:
 		"size_scale": size_scale,
 		"body_mass_kg": mass_kg,
 		"death_policy": sres.death_policy,
+		"survival": sres.survival,
 		"capacities": caps
 	}
 
@@ -107,7 +108,16 @@ func apply_to(species_id: Variant, actor: Actor) -> void:
 
 	# identity/policy
 	actor.death_policy = s.get("death_policy", {})
+	
+	var tag_src := s.get("tags", []) as Array
+	var out: Array[StringName] = []
+	for t in tag_src:
+		out.append(StringName(t))
+	actor.tags = out
 
+	actor.species_id = s.get("id", StringName())
+	actor.survival_defaults = s.get("survival", {})
+	
 	# body graph (baked dicts)
 	var body: Dictionary = s["body"]
 	actor.body = {"nodes": body.get("nodes", {}), "links": body.get("links", [])}

@@ -1,4 +1,4 @@
-# res://world/world_test.gd
+# res://core/world/world_test.gd
 class_name WorldTest
 extends WorldAPI
 
@@ -14,23 +14,9 @@ func is_wall(p: Vector2i) -> bool:
 	# 0) Outer border
 	if p.x == GRID_MIN.x or p.x == GRID_MAX.x or p.y == GRID_MIN.y or p.y == GRID_MAX.y:
 		return true
-
-	# 1) Partitions with door gaps at y=0
-	if p.x == -12 and p.y != 0: return true
-	if p.x == 12  and p.y != 0: return true
-
-	# Left section: race lane
-	if (p.y == -9 or p.y == -7) and _in_x(p.x, -18, -13):
-		return true
-
-	# Center: doorway choke at x=-2, gap at y=0
-	if p.x == -2 and _in_y(p.y, -10, 10) and p.y != 0:
-		return true
-
-	# Right: corner-touch blocker
-	if p == Vector2i(15, 6) or p == Vector2i(16, 5):
-		return true
-
+	# 1) Simple obstacles
+	if _in_x(p.x, -10, -8) and _in_y(p.y, -10, 10): return true
+	if _in_x(p.x, 8, 10) and _in_y(p.y, -10, 10): return true
 	return false
 
 func _is_inside(p: Vector2i) -> bool:
@@ -43,3 +29,14 @@ func glyph(p: Vector2i) -> String:
 	if is_wall(p): return "#"
 	if is_passable(p): return "."
 	return " "
+
+# Environment defaults for test world.
+func environment_at(p: Vector2i) -> Dictionary:
+	# Constant for now. Variation can be added later.
+	return {
+		"medium": &"air",
+		"gas": {&"oxygen": 0.21},
+		"temp_C": 21.0,
+		"humidity": 0.5,
+		"water_available": false
+	}

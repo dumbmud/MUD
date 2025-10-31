@@ -4,6 +4,13 @@ extends RefCounted
 ## Actor — BodyGraph era. No zone_* fields. No organs_*.
 ## Stamina is a pool dict.
 
+var species_id: StringName = &""
+var tags: Array[StringName] = []           # species tags copied from BodyDB
+var death_policy: Dictionary = {}          # species death policy
+var survival_defaults: Dictionary = {}     # species survival overrides
+var survival: Dictionary = {}              # runtime survival buffers (Survival.init_for fills)
+var statuses: Dictionary = {}              # active status flags {id: bool}
+
 # Identity / position
 var actor_id: int
 var grid_pos: Vector2i
@@ -26,7 +33,6 @@ var gait: int = 1  # 0..3
 
 # Instance knobs / death policy
 var size_scale: float = 1.0
-var death_policy: Dictionary = {}
 var mass_kg: float = 0.0
 
 # Display
