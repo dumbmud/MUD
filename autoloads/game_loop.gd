@@ -5,7 +5,7 @@ extends Node
 ## Turn-based (TB): pause-by-default. On kick(), advance real time until the tracked
 ## actor commits, then pause immediately (mid-tick allowed).
 ## Real-time (RT): advance full ticks on a cadence. The only RT differences are that
-## PlayerController allows holds and assumes Wait(1) when idle.
+## PlayerController allows holds and assumes Wait(0) when idle.
 ##
 ## Accumulator rules:
 ##  - Accumulate wall time only while actually running

@@ -1,0 +1,14 @@
+[gd_scene load_steps=4 format=3 uid="uid://bwgwk784n5knb"]
+
+[ext_resource type="Script" uid="uid://cxhlcbfkmt2vv" path="res://ui/panels/survival_panel.gd" id="1_kjfi1"]
+[ext_resource type="Script" uid="uid://b5vvvhsvdliem" path="res://scenes/console.gd" id="2_oougr"]
+[ext_resource type="FontFile" uid="uid://d3mavtwa0qug6" path="res://fonts/CozetteVector.ttf" id="3_5i6gb"]
+
+[node name="SurvivalPanel" type="Node2D"]
+z_index = 100
+script = ExtResource("1_kjfi1")
+
+[node name="Console" type="Node2D" parent="."]
+script = ExtResource("2_oougr")
+font = ExtResource("3_5i6gb")
+font_size = null

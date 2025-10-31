@@ -18,10 +18,17 @@ var _ranges := {}                # name -> Vector2i(start,end_inclusive)
 var _last_msg_text := ""
 var _last_msg_kind: StringName = &"info"
 
+func refresh() -> void:
+	# if you draw through a Console child:
+	if has_node("Console"):
+		$Console.redraw(Vector2i.ZERO)
+
 func bind(sim: SimManager, bus: Node, win: WindowManager, tracked_actor_id: int) -> void:
 	_sim = sim
 	_bus = bus
 	_win = win
+	if _win:
+		_win.register_listener(self)
 	_tracked_id = tracked_actor_id
 	# signals
 	get_viewport().size_changed.connect(_on_view_changed)
@@ -67,8 +74,8 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _in_range("mode", sx):
 		GameLoop.toggle_real_time()
 		_redraw()
-	elif _in_range("vitals", sx):
-		if _win: _win.open(&"actor_sheet")
+	elif _in_range("vitals", sx) or _in_range("survival", sx):
+		if _win: _win.toggle(&"survival_panel")
 	elif _in_range("message", sx):
 		if _win: _win.toggle(&"log_console")
 
@@ -107,6 +114,7 @@ func _compose_line() -> Array:
 	var mode := InputManager.get_desired_gait()    # 0..3 Blue/Green/Orange/Red
 	var a := _sim.get_actor(_tracked_id) if _sim else null
 	if a != null:
+		var seg_start := cells.size()
 		# stamina bar using 🭵…🭰 with partials
 		var bar := _stamina_bar(a, 10)
 		_push_text(cells, bar, Color(1,1,1))
@@ -114,6 +122,7 @@ func _compose_line() -> Array:
 		var speed_cells := _speed_label(a, mode)
 		for cell in speed_cells:
 			cells.append(cell)
+		_ranges["survival"] = Vector2i(seg_start, cells.size()-1)
 	else:
 		_push_text(cells, "🭵          🭰¼@0.00m/s ", Color(0.6,0.6,0.6))
 
@@ -121,8 +130,18 @@ func _compose_line() -> Array:
 	# spacer
 	_push_text(cells, "  ", Color(1,1,1))
 
-	# 3) Vitals
-	_push_text(cells, "[Vitals] ", Color(1,1,1), "vitals")
+	# 3) Status summary (buffs/debuffs)
+	var buffs := 0
+	var debuffs := 0
+	if a != null and typeof(a.statuses) == TYPE_DICTIONARY:
+		for k in a.statuses.keys():
+			if a.statuses[k]:
+				var ks := String(k)
+				if ks.begins_with("+"): buffs += 1
+				elif ks.begins_with("-"): debuffs += 1
+	var stat_txt := "[+%d -%d] " % [buffs, debuffs]
+	_push_text(cells, stat_txt, Color(1,1,1), "survival")
+
 
 	# 4) Right-aligned Tick
 	var tick := _sim.tick_count if _sim else 0

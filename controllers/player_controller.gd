@@ -7,7 +7,7 @@ extends CommandSource
 ## - Returns at most one command when asked.
 ## - Prechecks verbs; blocked taps advance zero time and post a message.
 ## - Holds are optional (enabled via GameLoop policy).
-## - RT idle policy: optionally return Wait(1) when no input.
+## - RT idle policy: optionally return Wait(0) when no input.
 
 var allow_holds: bool = false
 var assume_wait_when_idle: bool = false
