@@ -146,7 +146,7 @@ max_count = 6
 script = ExtResource("4_rjiir")
 kind = &"effector"
 params = {
-"mode": &"ground",
+"medium": &"ground",
 "score": 0.0,
 "type": &"locomotor"
 }
@@ -175,8 +175,8 @@ params = {
 [sub_resource type="Resource" id="Resource_0c743"]
 script = ExtResource("3_4oj8q")
 id = &"torso"
-sockets = [SubResource("Resource_k7ruj"), SubResource("Resource_8cder"), SubResource("Resource_wir0l"), SubResource("Resource_7cq8i")]
-ports = [SubResource("Resource_aw33y")]
+sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_k7ruj"), SubResource("Resource_8cder"), SubResource("Resource_wir0l"), SubResource("Resource_7cq8i")])
+ports = Array[ExtResource("2_3teaa")]([SubResource("Resource_aw33y")])
 
 [sub_resource type="Resource" id="Resource_ulm2d"]
 script = ExtResource("4_rjiir")
@@ -221,7 +221,7 @@ params = {
 [sub_resource type="Resource" id="Resource_sqqy0"]
 script = ExtResource("3_4oj8q")
 id = &"head"
-sockets = [SubResource("Resource_ulm2d"), SubResource("Resource_trwnn"), SubResource("Resource_c0hux"), SubResource("Resource_3g4v4")]
+sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_ulm2d"), SubResource("Resource_trwnn"), SubResource("Resource_c0hux"), SubResource("Resource_3g4v4")])
 
 [sub_resource type="Resource" id="Resource_k28pg"]
 script = ExtResource("2_3teaa")
@@ -236,7 +236,7 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-ports = [SubResource("Resource_k28pg")]
+ports = Array[ExtResource("2_3teaa")]([SubResource("Resource_k28pg")])
 
 [sub_resource type="Resource" id="Resource_qoud6"]
 script = ExtResource("2_3teaa")
@@ -251,7 +251,7 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-ports = [SubResource("Resource_qoud6")]
+ports = Array[ExtResource("2_3teaa")]([SubResource("Resource_qoud6")])
 
 [sub_resource type="Resource" id="Resource_n1ja0"]
 script = ExtResource("4_rjiir")
@@ -268,7 +268,7 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-sockets = [SubResource("Resource_n1ja0")]
+sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_n1ja0")])
 
 [sub_resource type="Resource" id="Resource_fhb1o"]
 script = ExtResource("2_3teaa")
@@ -283,7 +283,7 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-ports = [SubResource("Resource_fhb1o")]
+ports = Array[ExtResource("2_3teaa")]([SubResource("Resource_fhb1o")])
 
 [sub_resource type="Resource" id="Resource_ys0yt"]
 script = ExtResource("2_3teaa")
@@ -298,7 +298,7 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-ports = [SubResource("Resource_ys0yt")]
+ports = Array[ExtResource("2_3teaa")]([SubResource("Resource_ys0yt")])
 
 [sub_resource type="Resource" id="Resource_nkfio"]
 script = ExtResource("4_rjiir")
@@ -315,7 +315,7 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-sockets = [SubResource("Resource_nkfio")]
+sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_nkfio")])
 
 [sub_resource type="Resource" id="Resource_lxa6d"]
 script = ExtResource("2_3teaa")
@@ -330,7 +330,7 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-ports = [SubResource("Resource_lxa6d")]
+ports = Array[ExtResource("2_3teaa")]([SubResource("Resource_lxa6d")])
 
 [sub_resource type="Resource" id="Resource_1c4ug"]
 script = ExtResource("2_3teaa")
@@ -345,13 +345,13 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-ports = [SubResource("Resource_1c4ug")]
+ports = Array[ExtResource("2_3teaa")]([SubResource("Resource_1c4ug")])
 
 [sub_resource type="Resource" id="Resource_45vy4"]
 script = ExtResource("4_rjiir")
 kind = &"effector"
 params = {
-"mode": &"biped",
+"medium": &"ground",
 "score": 1.0,
 "type": &"locomotor"
 }
@@ -364,7 +364,7 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-sockets = [SubResource("Resource_45vy4")]
+sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_45vy4")])
 
 [sub_resource type="Resource" id="Resource_hffsh"]
 script = ExtResource("2_3teaa")
@@ -379,7 +379,7 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-ports = [SubResource("Resource_hffsh")]
+ports = Array[ExtResource("2_3teaa")]([SubResource("Resource_hffsh")])
 
 [sub_resource type="Resource" id="Resource_2uflw"]
 script = ExtResource("2_3teaa")
@@ -394,13 +394,13 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-ports = [SubResource("Resource_2uflw")]
+ports = Array[ExtResource("2_3teaa")]([SubResource("Resource_2uflw")])
 
 [sub_resource type="Resource" id="Resource_ululu"]
 script = ExtResource("4_rjiir")
 kind = &"effector"
 params = {
-"mode": &"biped",
+"medium": &"ground",
 "score": 1.0,
 "type": &"locomotor"
 }
@@ -413,9 +413,9 @@ channels_present = {
 "gas": false,
 "signal": true
 }
-sockets = [SubResource("Resource_ululu")]
+sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_ululu")])
 
 [resource]
 script = ExtResource("5_tpgj4")
-nodes = [SubResource("Resource_0c743"), SubResource("Resource_sqqy0"), SubResource("Resource_stf7x"), SubResource("Resource_rtefe"), SubResource("Resource_n84av"), SubResource("Resource_6swqa"), SubResource("Resource_b5lwc"), SubResource("Resource_gyncr"), SubResource("Resource_y8f2j"), SubResource("Resource_0up7f"), SubResource("Resource_fxp47"), SubResource("Resource_nufvd"), SubResource("Resource_skorn"), SubResource("Resource_twq5f")]
-links = [SubResource("Resource_2dvon"), SubResource("Resource_3teaa"), SubResource("Resource_4oj8q"), SubResource("Resource_rjiir"), SubResource("Resource_tpgj4"), SubResource("Resource_h35ay"), SubResource("Resource_h0f3f"), SubResource("Resource_g6j5e"), SubResource("Resource_ny0ac"), SubResource("Resource_36hum"), SubResource("Resource_hum5g"), SubResource("Resource_gfk1y"), SubResource("Resource_okvgj")]
+nodes = Array[ExtResource("3_4oj8q")]([SubResource("Resource_0c743"), SubResource("Resource_sqqy0"), SubResource("Resource_stf7x"), SubResource("Resource_rtefe"), SubResource("Resource_n84av"), SubResource("Resource_6swqa"), SubResource("Resource_b5lwc"), SubResource("Resource_gyncr"), SubResource("Resource_y8f2j"), SubResource("Resource_0up7f"), SubResource("Resource_fxp47"), SubResource("Resource_nufvd"), SubResource("Resource_skorn"), SubResource("Resource_twq5f")])
+links = Array[ExtResource("1_2dvon")]([SubResource("Resource_2dvon"), SubResource("Resource_3teaa"), SubResource("Resource_4oj8q"), SubResource("Resource_rjiir"), SubResource("Resource_tpgj4"), SubResource("Resource_h35ay"), SubResource("Resource_h0f3f"), SubResource("Resource_g6j5e"), SubResource("Resource_ny0ac"), SubResource("Resource_36hum"), SubResource("Resource_hum5g"), SubResource("Resource_gfk1y"), SubResource("Resource_okvgj")])

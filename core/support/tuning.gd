@@ -12,6 +12,10 @@ const MODE_GREEN := 1
 const MODE_ORANGE := 2
 const MODE_RED := 3
 
+const SUPPORT_EFFORT_GAIN := 0.10        # effort ↓ with more supports/ports
+const RESERVE_MASS_EFFORT_PEN := 0.80    # effort ↑ with insulating reserves (per frac of body mass)
+const MASS_COST_EXP := 0.12              # heavy bodies pay slightly more per second
+
 # Speed multipliers per mode (apply mobility & mass after)
 const MODE_SPEED_MULT := {MODE_BLUE:1.0, MODE_GREEN:2.0, MODE_ORANGE:5.0, MODE_RED:6.0}
 
@@ -25,6 +29,13 @@ const MODE_DRAIN_MULT := {
 	MODE_GREEN:  0.80,    # break-even at baseline; hours if cardio*thermo > 1
 	MODE_ORANGE: 4.133,   # 4.133 - 0.8 = 3.333 → 100/3.333 ≈ 30 s
 	MODE_RED:   17.467    # 17.467 - 0.8 = 16.667 → 100/16.667 ≈ 6 s
+}
+
+const MEDIUM_SPEED_BASE := {
+	&"ground":   1.0,   # human baseline
+	&"water":    1.0,   # ok default; fish get speed from effectors for now
+	&"air":     10.0,   # lifts flight speeds without per-species knobs
+	&"substrate":0.3    # moving through solid media is slow
 }
 
 # Optional start burst floors

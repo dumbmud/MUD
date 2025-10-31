@@ -37,13 +37,6 @@ static func locomotor_multiplier(actor: Actor) -> float:
 static func effective_mode(actor: Actor, mode_hint: int) -> int:
 	return (mode_hint if mode_hint >= 0 else clampi(actor.gait, 0, 3))  # reusing actor.gait as "effort mode"
 
-static func step_seconds(actor: Actor, dir: Vector2i, mode_hint: int = -1) -> float:
-	var meters := step_distance_m(dir)
-	var m := effective_mode(actor, mode_hint)
-	var base := Tuning.HUMAN_WALK_MPS * float(Tuning.MODE_SPEED_MULT.get(m, 1.0))
-	var speed : float = max(0.05, base * locomotor_multiplier(actor))
-	return meters / speed
-
 # Cardio/thermo factors
 static func _cardio_factor(actor: Actor) -> float:
 	var c : float = max(0.01, float(actor.capacities.get("circ",  1.0)))
@@ -56,8 +49,24 @@ static func _thermo_regen_factor(actor: Actor) -> float:
 	return Tuning.thermo_regen_factor(th)
 
 static func locomotor_effort_factor(actor: Actor) -> float:
-	var s : float = max(0.1, _mobility_score(actor) / 2.0)
-	return clamp(1.0 / s, 0.5, 4.0)
+	# Base from mobility (same as before)
+	var mob : float = max(0.1, _mobility_score(actor))   # already 0..~2+ with diminishing return in Capacity
+	var base : float = 1.0 / max(0.1, mob / 2.0)               # ≈1.0 at “two good limbs”, >1 when under-limbed
+
+	# Support: sockets.kind=="support" and ports anchor=="bone" via Capacity.load
+	var load_cap : float = max(0.0, float(actor.capacities.get("load", 0.0)))
+	var support_gain := 1.0 / (1.0 + Tuning.SUPPORT_EFFORT_GAIN * load_cap)
+
+	# Reserve mass (fraction of body mass)
+	var mm : float = max(1.0, actor.mass_kg)
+	var rm_frac : float = clamp(actor.reserve_mass / mm, 0.0, 0.6)
+	var reserve_pen := 1.0 + Tuning.RESERVE_MASS_EFFORT_PEN * rm_frac
+
+	# Mass penalty (small)
+	var mass_pen := pow(max(1.0, actor.mass_kg) / Tuning.REF_MASS_KG, Tuning.MASS_COST_EXP)
+
+	# Result: higher → costlier per second; lower → cheaper
+	return clamp(base * support_gain * reserve_pen * mass_pen, 0.3, 6.0)
 
 # --- Regen (constant, independent of mode) -----------------------------------
 static func stamina_regen_per_sec(actor: Actor) -> float:
@@ -101,3 +110,22 @@ static func can_afford_generic(actor: Actor, seconds: float, intensity: float) -
 	var need := generic_cost(actor, seconds, intensity)
 	var have := float(actor.stamina.get("value", 0.0))
 	return have >= need
+
+# Add helper
+static func speed_mps(actor: Actor, mode_hint: int = -1, medium: StringName = &"ground") -> float:
+	var mode := effective_mode(actor, mode_hint)
+	var base_walk := Tuning.HUMAN_WALK_MPS
+	var mode_mult := float(Tuning.MODE_SPEED_MULT.get(mode, 1.0))
+	var medium_base := float(Tuning.MEDIUM_SPEED_BASE.get(medium, 1.0))
+	var loco := locomotor_multiplier(actor)               # existing
+	var size_mult := pow(max(0.1, actor.mass_kg) / Tuning.REF_MASS_KG, Tuning.MASS_SPEED_EXP)  # existing pattern
+	return max(0.01, base_walk * mode_mult * medium_base * loco * size_mult)
+
+# Replace step_seconds body to use speed_mps; keep signature but add optional medium arg
+static func step_seconds(actor: Actor, dir: Vector2i, mode_hint: int = -1, medium: StringName = &"ground") -> float:
+	var d := dir
+	if d.x != 0: d.x = sign(d.x)
+	if d.y != 0: d.y = sign(d.y)
+	var meters := 1.41421356237 if (abs(d.x) + abs(d.y) == 2) else 1.0
+	var v := speed_mps(actor, mode_hint, medium)
+	return meters / v

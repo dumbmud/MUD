@@ -42,7 +42,7 @@ func _build_human_graph() -> BodyGraph:
 
 	# nodes
 	var torso := _N(&"torso", {"signal":true,"fluid":true,"gas":true}, [
-		_sock_eff_loco(&"ground", 0.0),   # locomotion lives on feet, leave 0 here
+		_sock_eff_loco(&"ground", 0.0),   # locomotion lives on feet; torso contributes 0
 		_sock_support(1.0),
 		_sock_pump(),          # heart placeholder
 		_sock_resp_surface()   # lungs placeholder
@@ -74,18 +74,20 @@ func _build_human_graph() -> BodyGraph:
 	var ull := _N(&"upper_leg.L", {"signal":true,"fluid":true,"gas":false}, [], [_port(&"limb",&"bone",1)])
 	var lll := _N(&"lower_leg.L", {"signal":true,"fluid":true,"gas":false}, [], [_port(&"limb",&"bone",1)])
 	var fotl:= _N(&"foot.L",      {"signal":true,"fluid":true,"gas":false}, [
-		_sock_eff_loco(&"biped", 1.0)
+		_sock_eff_loco(&"ground", 1.0)
 	], [])
 
 	var ulr := _N(&"upper_leg.R", {"signal":true,"fluid":true,"gas":false}, [], [_port(&"limb",&"bone",1)])
 	var llr := _N(&"lower_leg.R", {"signal":true,"fluid":true,"gas":false}, [], [_port(&"limb",&"bone",1)])
 	var fotr:= _N(&"foot.R",      {"signal":true,"fluid":true,"gas":false}, [
-		_sock_eff_loco(&"biped", 1.0)
+		_sock_eff_loco(&"ground", 1.0)
 	], [])
 
-	g.nodes.clear()
+	# assign nodes as a TypedArray[BodyNode]
+	var node_list: Array[BodyNode] = []
 	for n in [torso, head, ual, lal, hanl, uar, lar, hanr, ull, lll, fotl, ulr, llr, fotr]:
-		g.nodes.append(n)
+		node_list.append(n)
+	g.nodes = node_list
 
 	# links (signal=3 across all; fluid=3 across limbs; gas=2 only torso↔head)
 	var L = func(a: StringName, b: StringName, sf:int, ff:int, gf:int) -> BodyLink:
@@ -94,7 +96,7 @@ func _build_human_graph() -> BodyGraph:
 		e.flow = {"signal":sf, "fluid":ff, "gas":gf}
 		return e
 
-	g.links.clear()
+	var link_list: Array[BodyLink] = []
 	for e in [
 		L.call(&"torso", &"head", 3, 3, 2),
 		L.call(&"torso", &"upper_arm.L", 3, 3, 0),
@@ -110,7 +112,8 @@ func _build_human_graph() -> BodyGraph:
 		L.call(&"upper_leg.R", &"lower_leg.R", 3, 3, 0),
 		L.call(&"lower_leg.R", &"foot.R", 3, 3, 0)
 	]:
-		g.links.append(e)
+		link_list.append(e)
+	g.links = link_list
 
 	return g
 
@@ -144,9 +147,23 @@ func _N(id:StringName, ch:Dictionary, sockets:Array, ports:Array, tags:Array[Str
 	}
 	n.tissue = {"skin_hp": SKIN_HP, "soft_hp": SOFT_HP, "structure_hp": STRUCT_HP}
 	n.integument = RESIST.duplicate()
-	n.sockets = sockets.duplicate()
-	n.ports = ports.duplicate()
-	n.tags = tags.duplicate()
+
+	# force-typed arrays
+	var s_out: Array[BodySocket] = []
+	for s in sockets:
+		if s is BodySocket: s_out.append(s)
+	n.sockets = s_out
+
+	var p_out: Array[BodyPort] = []
+	for p in ports:
+		if p is BodyPort: p_out.append(p)
+	n.ports = p_out
+
+	var t_out: Array[StringName] = []
+	for t in tags:
+		t_out.append(StringName(t))
+	n.tags = t_out
+
 	return n
 
 func _sock_controller() -> BodySocket:
@@ -155,10 +172,11 @@ func _sock_controller() -> BodySocket:
 	s.params = {"id": &"controller0"}
 	return s
 
-func _sock_eff_loco(mode:StringName, score:float) -> BodySocket:
+func _sock_eff_loco(medium:StringName, score:float) -> BodySocket:
 	var s := BodySocket.new()
 	s.kind = &"effector"
-	s.params = {"type": &"locomotor", "mode": mode, "score": score}
+	# medium used by speed path; score contributes to mobility capacity
+	s.params = {"type": &"locomotor", "medium": medium, "score": score}
 	return s
 
 func _sock_eff_manip(score:float) -> BodySocket:

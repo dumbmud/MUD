@@ -47,12 +47,11 @@ func apply(a: Actor, args: Dictionary, sim: SimManager) -> bool:
 	a.grid_pos = t
 	
 	
-	var mode := int(args.get("gait", -1))
-	var seconds := Physio.step_seconds(a, d, mode)
-	var cost := Physio.move_cost(a, seconds, mode)
-	var st: Dictionary = a.stamina
-	st["value"] = clampf(float(st.get("value", 0.0)) - cost, 0.0, float(st.get("max", 100.0)))
-	a.stamina = st
+	var g_hint := int(args.get("gait", -1))
+	var med  : StringName = args.get("medium", &"ground")
+	var seconds := Physio.step_seconds(a, d, g_hint, med)
+	var cost := Physio.move_cost(a, seconds, g_hint)   # unchanged API
+	a.stamina["value"] = clampf(a.stamina["value"] - cost, 0.0, a.stamina["max"])
 
 	
 	return true
