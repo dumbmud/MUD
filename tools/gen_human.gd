@@ -63,6 +63,13 @@ func _build_human_graph() -> BodyGraph:
 		_sock_sensor(&"scent",  {"range":6.0,"fov_deg":360.0,"acuity":0.7,"night":1.0})
 	], [])
 
+	# NEW pelvis between torso and legs
+	var pelvis := _N(&"pelvis", {"signal":true,"fluid":true,"gas":false}, [
+		_sock_support(1.0)
+	], [
+		_port(&"limb",&"bone", 2)
+	])
+
 	# Arms L/R
 	var ual := _N(&"upper_arm.L", {"signal":true,"fluid":true,"gas":false}, [], [_port(&"limb",&"bone",1)])
 	var lal := _N(&"lower_arm.L", {"signal":true,"fluid":true,"gas":false}, [], [_port(&"limb",&"bone",1)])
@@ -91,7 +98,7 @@ func _build_human_graph() -> BodyGraph:
 
 	# assign nodes as a TypedArray[BodyNode]
 	var node_list: Array[BodyNode] = []
-	for n in [torso, head, ual, lal, hanl, uar, lar, hanr, ull, lll, fotl, ulr, llr, fotr]:
+	for n in [torso, head, pelvis, ual, lal, hanl, uar, lar, hanr, ull, lll, fotl, ulr, llr, fotr]:
 		node_list.append(n)
 	g.nodes = node_list
 
@@ -105,18 +112,22 @@ func _build_human_graph() -> BodyGraph:
 	var link_list: Array[BodyLink] = []
 	for e in [
 		L.call(&"torso", &"head", 3, 3, 2),
+
+		L.call(&"torso", &"pelvis", 3, 3, 0),
+		L.call(&"pelvis", &"upper_leg.L", 3, 3, 0),
+		L.call(&"upper_leg.L", &"lower_leg.L", 3, 3, 0),
+		L.call(&"lower_leg.L", &"foot.L", 3, 3, 0),
+		L.call(&"pelvis", &"upper_leg.R", 3, 3, 0),
+		L.call(&"upper_leg.R", &"lower_leg.R", 3, 3, 0),
+		L.call(&"lower_leg.R", &"foot.R", 3, 3, 0),
+
+		# arms remain on torso
 		L.call(&"torso", &"upper_arm.L", 3, 3, 0),
 		L.call(&"upper_arm.L", &"lower_arm.L", 3, 3, 0),
 		L.call(&"lower_arm.L", &"hand.L", 3, 3, 0),
 		L.call(&"torso", &"upper_arm.R", 3, 3, 0),
 		L.call(&"upper_arm.R", &"lower_arm.R", 3, 3, 0),
-		L.call(&"lower_arm.R", &"hand.R", 3, 3, 0),
-		L.call(&"torso", &"upper_leg.L", 3, 3, 0),
-		L.call(&"upper_leg.L", &"lower_leg.L", 3, 3, 0),
-		L.call(&"lower_leg.L", &"foot.L", 3, 3, 0),
-		L.call(&"torso", &"upper_leg.R", 3, 3, 0),
-		L.call(&"upper_leg.R", &"lower_leg.R", 3, 3, 0),
-		L.call(&"lower_leg.R", &"foot.R", 3, 3, 0)
+		L.call(&"lower_arm.R", &"hand.R", 3, 3, 0)
 	]:
 		link_list.append(e)
 	g.links = link_list
