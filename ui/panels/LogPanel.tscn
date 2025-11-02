@@ -11,4 +11,3 @@ script = ExtResource("1_waxws")
 [node name="Console" type="Node2D" parent="."]
 script = ExtResource("2_f8k6i")
 font = ExtResource("3_knd6y")
-font_size = null

@@ -40,6 +40,12 @@ var glyph: String = ""
 var fg_color: Color = Color.WHITE
 var is_player: bool = false
 
+# Equipment state (no UI)
+var equipment_nodes: Dictionary = {}    # node_id -> {"soft_used":int,"has_rigid":bool,"soft_cap":int,"rigid_cap":int,"layers":Array}
+var equipment_drape: Array = []         # Array of {"item_id":StringName,"cost":int,"kind":String}
+var equipment_drape_cap: int = 5
+var equipment_drape_used: int = 0
+
 # Time budget
 var phase: int = 0
 
