@@ -23,3 +23,10 @@ extends Resource
 
 # Survival knobs (species-local defaults and requirements)
 @export var survival: Dictionary = {}
+
+
+# Morph scaffolding (foundational, no runtime features required)
+@export var repro_key: StringName = StringName()   # default to id at compile
+@export var morph_defs: Dictionary = {}            # {id: {ops:[...]}} pure data
+@export var morph_rules: Dictionary = {}           # {weights:{id:int}, sex_system:String, notes:String}
+@export var repro_meta: Dictionary = {}            # stubs for future (mode, offspring_unit, clutch_range, karyotype)

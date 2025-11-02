@@ -13,8 +13,6 @@ graph = ExtResource("1_llrv4")
 tags = Array[StringName]([&"debug", &"sleep_required", &"solid_excretion", &"requires_gas:oxygen"])
 death_policy = {
 "or": [{
-"organ_destroyed": "controller0"
-}, {
 "channel_depleted": {
 "name": "oxygen",
 "ticks": 300
@@ -35,5 +33,95 @@ survival = {
 "temp_band": {
 "max_C": 39.0,
 "min_C": 35.0
+}
+}
+repro_key = &"human"
+morph_defs = {
+"sex.macro": {
+"ops": [{
+"id": "repro/gonad.macro",
+"op": "add_node",
+"props": {
+"gamete_out.macro": true,
+"gestation_site": true,
+"repro_active": false
+},
+"tags": ["repro", "internal", "organ_type:gonad"]
+}, {
+"a": "pelvis",
+"b": "repro/gonad.macro",
+"flow": {
+"fluid": 3,
+"gas": 0,
+"signal": 3
+},
+"op": "add_link"
+}, {
+"id": "repro/breast.L",
+"op": "add_node",
+"props": {
+"feed_out": true,
+"mount_hint": "front",
+"mount_parent": "torso",
+"repro_active": false
+},
+"tags": ["repro", "external", "organ_type:lactation"]
+}, {
+"id": "repro/breast.R",
+"op": "add_node",
+"props": {
+"feed_out": true,
+"mount_hint": "front",
+"mount_parent": "torso",
+"repro_active": false
+},
+"tags": ["repro", "external", "organ_type:lactation"]
+}, {
+"a": "torso",
+"b": "repro/breast.L",
+"flow": {
+"fluid": 1,
+"gas": 0,
+"signal": 3
+},
+"op": "add_link"
+}, {
+"a": "torso",
+"b": "repro/breast.R",
+"flow": {
+"fluid": 1,
+"gas": 0,
+"signal": 3
+},
+"op": "add_link"
+}]
+},
+"sex.micro": {
+"ops": [{
+"id": "repro/gonad.micro",
+"op": "add_node",
+"props": {
+"gamete_out.micro": true,
+"gestation_site": false,
+"repro_active": false
+},
+"tags": ["repro", "internal", "organ_type:gonad"]
+}, {
+"a": "pelvis",
+"b": "repro/gonad.micro",
+"flow": {
+"fluid": 3,
+"gas": 0,
+"signal": 3
+},
+"op": "add_link"
+}]
+}
+}
+morph_rules = {
+"sex_system": "dioecious",
+"weights": {
+"sex.macro": 50,
+"sex.micro": 50
 }
 }

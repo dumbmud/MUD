@@ -1,12 +1,12 @@
-[gd_resource type="Resource" script_class="BodyGraph" load_steps=58 format=3 uid="uid://cmd3o7s2ncphk"]
+[gd_resource type="Resource" script_class="BodyGraph" load_steps=53 format=3 uid="uid://cmd3o7s2ncphk"]
 
 [ext_resource type="Script" uid="uid://botj0eb0lhiqr" path="res://creatures/_types/body_link.gd" id="1_2dvon"]
-[ext_resource type="Script" uid="uid://sl4lvyrr8rxe" path="res://creatures/_types/body_node.gd" id="2_3teaa"]
-[ext_resource type="Script" uid="uid://b85hcdf4wtq67" path="res://creatures/_types/body_port.gd" id="3_4oj8q"]
+[ext_resource type="Script" uid="uid://b85hcdf4wtq67" path="res://creatures/_types/body_port.gd" id="2_3teaa"]
+[ext_resource type="Script" uid="uid://sl4lvyrr8rxe" path="res://creatures/_types/body_node.gd" id="3_4oj8q"]
 [ext_resource type="Script" uid="uid://dastim2wi4uoq" path="res://creatures/_types/body_socket.gd" id="4_rjiir"]
 [ext_resource type="Script" uid="uid://dnoxgtw7yn7gw" path="res://creatures/_types/body_graph.gd" id="5_tpgj4"]
 
-[sub_resource type="Resource" id="Resource_h35ay"]
+[sub_resource type="Resource" id="Resource_2dvon"]
 script = ExtResource("1_2dvon")
 a = &"torso"
 b = &"head"
@@ -16,7 +16,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_h0f3f"]
+[sub_resource type="Resource" id="Resource_3teaa"]
 script = ExtResource("1_2dvon")
 a = &"torso"
 b = &"pelvis"
@@ -26,7 +26,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_g6j5e"]
+[sub_resource type="Resource" id="Resource_4oj8q"]
 script = ExtResource("1_2dvon")
 a = &"pelvis"
 b = &"upper_leg.L"
@@ -36,7 +36,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_ny0ac"]
+[sub_resource type="Resource" id="Resource_rjiir"]
 script = ExtResource("1_2dvon")
 a = &"upper_leg.L"
 b = &"lower_leg.L"
@@ -46,7 +46,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_36hum"]
+[sub_resource type="Resource" id="Resource_tpgj4"]
 script = ExtResource("1_2dvon")
 a = &"lower_leg.L"
 b = &"foot.L"
@@ -56,7 +56,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_hum5g"]
+[sub_resource type="Resource" id="Resource_h35ay"]
 script = ExtResource("1_2dvon")
 a = &"pelvis"
 b = &"upper_leg.R"
@@ -66,7 +66,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_gfk1y"]
+[sub_resource type="Resource" id="Resource_h0f3f"]
 script = ExtResource("1_2dvon")
 a = &"upper_leg.R"
 b = &"lower_leg.R"
@@ -76,7 +76,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_okvgj"]
+[sub_resource type="Resource" id="Resource_g6j5e"]
 script = ExtResource("1_2dvon")
 a = &"lower_leg.R"
 b = &"foot.R"
@@ -86,7 +86,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_aw33y"]
+[sub_resource type="Resource" id="Resource_ny0ac"]
 script = ExtResource("1_2dvon")
 a = &"torso"
 b = &"upper_arm.L"
@@ -96,7 +96,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_k7ruj"]
+[sub_resource type="Resource" id="Resource_36hum"]
 script = ExtResource("1_2dvon")
 a = &"upper_arm.L"
 b = &"lower_arm.L"
@@ -106,7 +106,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_8cder"]
+[sub_resource type="Resource" id="Resource_hum5g"]
 script = ExtResource("1_2dvon")
 a = &"lower_arm.L"
 b = &"hand.L"
@@ -116,7 +116,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_wir0l"]
+[sub_resource type="Resource" id="Resource_gfk1y"]
 script = ExtResource("1_2dvon")
 a = &"torso"
 b = &"upper_arm.R"
@@ -126,7 +126,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_7cq8i"]
+[sub_resource type="Resource" id="Resource_okvgj"]
 script = ExtResource("1_2dvon")
 a = &"upper_arm.R"
 b = &"lower_arm.R"
@@ -136,7 +136,7 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_0c743"]
+[sub_resource type="Resource" id="Resource_aw33y"]
 script = ExtResource("1_2dvon")
 a = &"lower_arm.R"
 b = &"hand.R"
@@ -146,310 +146,263 @@ flow = {
 "signal": 3
 }
 
-[sub_resource type="Resource" id="Resource_ulm2d"]
-script = ExtResource("3_4oj8q")
+[sub_resource type="Resource" id="Resource_k7ruj"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 max_count = 6
 
-[sub_resource type="Resource" id="Resource_trwnn"]
+[sub_resource type="Resource" id="Resource_8cder"]
 script = ExtResource("4_rjiir")
 kind = &"effector"
 params = {
+"kind": "loco",
 "medium": &"ground",
-"score": 0.0,
-"type": &"locomotor"
+"weight": 0.0
 }
 
-[sub_resource type="Resource" id="Resource_c0hux"]
+[sub_resource type="Resource" id="Resource_wir0l"]
 script = ExtResource("4_rjiir")
-kind = &"support"
+kind = &"effector"
 params = {
-"score": 1.0
+"kind": "support",
+"weight": 1.0
 }
 
-[sub_resource type="Resource" id="Resource_3g4v4"]
+[sub_resource type="Resource" id="Resource_7cq8i"]
 script = ExtResource("4_rjiir")
-kind = &"pump"
+kind = &"gland"
 params = {
-"name": &"circulation_gate"
+"kind": "pump"
 }
 
-[sub_resource type="Resource" id="Resource_sqqy0"]
+[sub_resource type="Resource" id="Resource_0c743"]
 script = ExtResource("4_rjiir")
 kind = &"resp_surface"
-params = {
-"name": &"oxygen_exchange"
-}
 
-[sub_resource type="Resource" id="Resource_k28pg"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_ulm2d"]
+script = ExtResource("3_4oj8q")
 id = &"torso"
-sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_trwnn"), SubResource("Resource_c0hux"), SubResource("Resource_3g4v4"), SubResource("Resource_sqqy0")])
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_ulm2d")])
+sockets = [SubResource("Resource_8cder"), SubResource("Resource_wir0l"), SubResource("Resource_7cq8i"), SubResource("Resource_0c743")]
+ports = [SubResource("Resource_k7ruj")]
+tags = ["core"]
 
-[sub_resource type="Resource" id="Resource_stf7x"]
+[sub_resource type="Resource" id="Resource_trwnn"]
 script = ExtResource("4_rjiir")
 kind = &"controller"
 params = {
-"id": &"controller0"
+"kind": "brain"
 }
 
-[sub_resource type="Resource" id="Resource_qoud6"]
-script = ExtResource("4_rjiir")
-kind = &"sensor"
-params = {
-"acuity": 1.0,
-"fov_deg": 120.0,
-"modality": &"sight",
-"night": 0.2,
-"range": 8.0
-}
-
-[sub_resource type="Resource" id="Resource_rtefe"]
-script = ExtResource("4_rjiir")
-kind = &"sensor"
-params = {
-"acuity": 1.0,
-"fov_deg": 360.0,
-"modality": &"hearing",
-"night": 1.0,
-"range": 8.0
-}
-
-[sub_resource type="Resource" id="Resource_n1ja0"]
-script = ExtResource("4_rjiir")
-kind = &"sensor"
-params = {
-"acuity": 0.7,
-"fov_deg": 360.0,
-"modality": &"scent",
-"night": 1.0,
-"range": 6.0
-}
-
-[sub_resource type="Resource" id="Resource_n84av"]
-script = ExtResource("2_3teaa")
-id = &"head"
-sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_stf7x"), SubResource("Resource_qoud6"), SubResource("Resource_rtefe"), SubResource("Resource_n1ja0")])
-
-[sub_resource type="Resource" id="Resource_fhb1o"]
+[sub_resource type="Resource" id="Resource_c0hux"]
 script = ExtResource("3_4oj8q")
+id = &"head"
+sockets = [SubResource("Resource_trwnn")]
+tags = ["core"]
+
+[sub_resource type="Resource" id="Resource_3g4v4"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 max_count = 2
 
-[sub_resource type="Resource" id="Resource_6swqa"]
+[sub_resource type="Resource" id="Resource_sqqy0"]
 script = ExtResource("4_rjiir")
-kind = &"support"
+kind = &"effector"
 params = {
-"score": 1.0
+"kind": "support",
+"weight": 1.0
 }
 
-[sub_resource type="Resource" id="Resource_ys0yt"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_k28pg"]
+script = ExtResource("3_4oj8q")
 id = &"pelvis"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_6swqa")])
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_fhb1o")])
+sockets = [SubResource("Resource_sqqy0")]
+ports = [SubResource("Resource_3g4v4")]
+tags = ["core", "pelvic"]
 
-[sub_resource type="Resource" id="Resource_b5lwc"]
-script = ExtResource("3_4oj8q")
+[sub_resource type="Resource" id="Resource_stf7x"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 
-[sub_resource type="Resource" id="Resource_nkfio"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_qoud6"]
+script = ExtResource("3_4oj8q")
 id = &"upper_arm.L"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_b5lwc")])
+ports = [SubResource("Resource_stf7x")]
 
-[sub_resource type="Resource" id="Resource_gyncr"]
-script = ExtResource("3_4oj8q")
+[sub_resource type="Resource" id="Resource_rtefe"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 
-[sub_resource type="Resource" id="Resource_lxa6d"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_n1ja0"]
+script = ExtResource("3_4oj8q")
 id = &"lower_arm.L"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_gyncr")])
+ports = [SubResource("Resource_rtefe")]
 
-[sub_resource type="Resource" id="Resource_y8f2j"]
-script = ExtResource("4_rjiir")
-kind = &"effector"
-params = {
-"manipulator": 1.0
-}
-
-[sub_resource type="Resource" id="Resource_1c4ug"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_n84av"]
+script = ExtResource("3_4oj8q")
 id = &"hand.L"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_y8f2j")])
 
-[sub_resource type="Resource" id="Resource_0up7f"]
-script = ExtResource("3_4oj8q")
+[sub_resource type="Resource" id="Resource_fhb1o"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 
-[sub_resource type="Resource" id="Resource_45vy4"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_6swqa"]
+script = ExtResource("3_4oj8q")
 id = &"upper_arm.R"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_0up7f")])
+ports = [SubResource("Resource_fhb1o")]
 
-[sub_resource type="Resource" id="Resource_fxp47"]
-script = ExtResource("3_4oj8q")
+[sub_resource type="Resource" id="Resource_ys0yt"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 
-[sub_resource type="Resource" id="Resource_hffsh"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_b5lwc"]
+script = ExtResource("3_4oj8q")
 id = &"lower_arm.R"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_fxp47")])
+ports = [SubResource("Resource_ys0yt")]
 
-[sub_resource type="Resource" id="Resource_nufvd"]
-script = ExtResource("4_rjiir")
-kind = &"effector"
-params = {
-"manipulator": 1.0
-}
-
-[sub_resource type="Resource" id="Resource_2uflw"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_nkfio"]
+script = ExtResource("3_4oj8q")
 id = &"hand.R"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_nufvd")])
 
-[sub_resource type="Resource" id="Resource_skorn"]
-script = ExtResource("3_4oj8q")
+[sub_resource type="Resource" id="Resource_gyncr"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 
-[sub_resource type="Resource" id="Resource_ululu"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_lxa6d"]
+script = ExtResource("3_4oj8q")
 id = &"upper_leg.L"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_skorn")])
+ports = [SubResource("Resource_gyncr")]
 
-[sub_resource type="Resource" id="Resource_twq5f"]
-script = ExtResource("3_4oj8q")
+[sub_resource type="Resource" id="Resource_y8f2j"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 
-[sub_resource type="Resource" id="Resource_bwa2b"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_1c4ug"]
+script = ExtResource("3_4oj8q")
 id = &"lower_leg.L"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_twq5f")])
+ports = [SubResource("Resource_y8f2j")]
 
-[sub_resource type="Resource" id="Resource_c14ar"]
+[sub_resource type="Resource" id="Resource_0up7f"]
 script = ExtResource("4_rjiir")
 kind = &"effector"
 params = {
+"kind": "loco",
 "medium": &"ground",
-"score": 1.0,
-"type": &"locomotor"
+"weight": 1.0
 }
 
-[sub_resource type="Resource" id="Resource_blc1s"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_45vy4"]
+script = ExtResource("3_4oj8q")
 id = &"foot.L"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_c14ar")])
+sockets = [SubResource("Resource_0up7f")]
 
-[sub_resource type="Resource" id="Resource_rioxi"]
-script = ExtResource("3_4oj8q")
+[sub_resource type="Resource" id="Resource_fxp47"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 
-[sub_resource type="Resource" id="Resource_kjrln"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_hffsh"]
+script = ExtResource("3_4oj8q")
 id = &"upper_leg.R"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_rioxi")])
+ports = [SubResource("Resource_fxp47")]
 
-[sub_resource type="Resource" id="Resource_4xe6d"]
-script = ExtResource("3_4oj8q")
+[sub_resource type="Resource" id="Resource_nufvd"]
+script = ExtResource("2_3teaa")
 role = &"limb"
 anchor = &"bone"
 
-[sub_resource type="Resource" id="Resource_4lyy5"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_2uflw"]
+script = ExtResource("3_4oj8q")
 id = &"lower_leg.R"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-ports = Array[ExtResource("3_4oj8q")]([SubResource("Resource_4xe6d")])
+ports = [SubResource("Resource_nufvd")]
 
-[sub_resource type="Resource" id="Resource_7bq7m"]
+[sub_resource type="Resource" id="Resource_skorn"]
 script = ExtResource("4_rjiir")
 kind = &"effector"
 params = {
+"kind": "loco",
 "medium": &"ground",
-"score": 1.0,
-"type": &"locomotor"
+"weight": 1.0
 }
 
-[sub_resource type="Resource" id="Resource_y2i1o"]
-script = ExtResource("2_3teaa")
+[sub_resource type="Resource" id="Resource_ululu"]
+script = ExtResource("3_4oj8q")
 id = &"foot.R"
 channels_present = {
 "fluid": true,
 "gas": false,
 "signal": true
 }
-sockets = Array[ExtResource("4_rjiir")]([SubResource("Resource_7bq7m")])
+sockets = [SubResource("Resource_skorn")]
 
 [resource]
 script = ExtResource("5_tpgj4")
-nodes = Array[ExtResource("2_3teaa")]([SubResource("Resource_k28pg"), SubResource("Resource_n84av"), SubResource("Resource_ys0yt"), SubResource("Resource_nkfio"), SubResource("Resource_lxa6d"), SubResource("Resource_1c4ug"), SubResource("Resource_45vy4"), SubResource("Resource_hffsh"), SubResource("Resource_2uflw"), SubResource("Resource_ululu"), SubResource("Resource_bwa2b"), SubResource("Resource_blc1s"), SubResource("Resource_kjrln"), SubResource("Resource_4lyy5"), SubResource("Resource_y2i1o")])
-links = Array[ExtResource("1_2dvon")]([SubResource("Resource_h35ay"), SubResource("Resource_h0f3f"), SubResource("Resource_g6j5e"), SubResource("Resource_ny0ac"), SubResource("Resource_36hum"), SubResource("Resource_hum5g"), SubResource("Resource_gfk1y"), SubResource("Resource_okvgj"), SubResource("Resource_aw33y"), SubResource("Resource_k7ruj"), SubResource("Resource_8cder"), SubResource("Resource_wir0l"), SubResource("Resource_7cq8i"), SubResource("Resource_0c743")])
+nodes = [SubResource("Resource_ulm2d"), SubResource("Resource_c0hux"), SubResource("Resource_k28pg"), SubResource("Resource_qoud6"), SubResource("Resource_n1ja0"), SubResource("Resource_n84av"), SubResource("Resource_6swqa"), SubResource("Resource_b5lwc"), SubResource("Resource_nkfio"), SubResource("Resource_lxa6d"), SubResource("Resource_1c4ug"), SubResource("Resource_45vy4"), SubResource("Resource_hffsh"), SubResource("Resource_2uflw"), SubResource("Resource_ululu")]
+links = [SubResource("Resource_2dvon"), SubResource("Resource_3teaa"), SubResource("Resource_4oj8q"), SubResource("Resource_rjiir"), SubResource("Resource_tpgj4"), SubResource("Resource_h35ay"), SubResource("Resource_h0f3f"), SubResource("Resource_g6j5e"), SubResource("Resource_ny0ac"), SubResource("Resource_36hum"), SubResource("Resource_hum5g"), SubResource("Resource_gfk1y"), SubResource("Resource_okvgj"), SubResource("Resource_aw33y")]

@@ -20,4 +20,6 @@ extends Resource
 @export var ports:   Array = []  #[BodyPort]   = []        # attachment points
 @export var tags:    Array = []  #[StringName] = []        # optional author hints
 
-@export var graft_clocks: Dictionary = {}          # {attach_knit:0.0, neural_adapt:0.0} optional
+@export var props: Dictionary = {} # arbitrary per-node properties; future-proof
+
+@export var graft_clocks: Dictionary = {} # {attach_knit:0.0, neural_adapt:0.0} optional
